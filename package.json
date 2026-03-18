@@ -1,0 +1,17 @@
+{
+  "name": "claude-code-author-automations",
+  "version": "1.0.0",
+  "description": "Claude Code / Cowork plugin for Author Automations Social",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}
