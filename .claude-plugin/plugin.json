@@ -1,8 +1,23 @@
 {
   "name": "author-automations-social",
-  "description": "Create and schedule social media posts, run AI campaigns, and manage your Author Automations Social account from Claude Code or Claude Cowork.",
+  "version": "1.0.0",
+  "description": "Create and schedule social media posts, run AI campaigns, and manage your Author Automations Social account from Claude Code or Claude Cowork. Supports 13 platforms including Instagram, TikTok, Facebook, LinkedIn, and more.",
   "author": {
     "name": "Author Automations",
-    "email": "support@authorautomations.com"
-  }
+    "email": "support@authorautomations.com",
+    "url": "https://authorautomations.social"
+  },
+  "homepage": "https://authorautomations.social/docs/api",
+  "repository": "https://github.com/chellehoniker/claude-code-author-automations",
+  "license": "MIT",
+  "keywords": [
+    "social-media",
+    "scheduling",
+    "content-creation",
+    "ai-campaigns",
+    "instagram",
+    "tiktok",
+    "authors",
+    "marketing"
+  ]
 }
