@@ -1,0 +1,17 @@
+{
+  "name": "author-automations",
+  "owner": {
+    "name": "Author Automations",
+    "email": "support@authorautomations.com",
+    "url": "https://authorautomations.social"
+  },
+  "description": "Claude plugins for indie authors. Connect your Author Automations Social account and run everything through Claude — posts, campaigns, scheduling, book-anchored templates.",
+  "plugins": [
+    {
+      "name": "author-automations-social",
+      "source": "./",
+      "description": "Create and schedule social posts, run AI campaigns, manage your content calendar across 14 platforms. Pairs with an Author Automations Social subscription.",
+      "version": "1.0.0"
+    }
+  ]
+}
