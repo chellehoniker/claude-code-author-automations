@@ -183,6 +183,57 @@ export const TOOLS = [
       required: ["campaignId", "startDate", "accountMap"],
     },
   },
+
+  // ── Link shortener (Switchy) ──
+  {
+    name: "aa_shorten_url",
+    description:
+      "Shorten a URL to the user's branded domain (storylink.to by default) via Switchy. Use this inline when you're about to paste a long URL into a caption — the short version is cleaner, trackable, and fits in tight character budgets on X/Bluesky. Optionally appends UTM parameters before shortening. Returns { shortUrl, linkId, domain }. Returns a 501 error if the user hasn't configured a link shortener yet — surface the error message to the user so they know to set it up in Settings → Link shortener.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        url: {
+          type: "string",
+          description:
+            "The long URL to shorten. Include the https:// prefix. If you want UTM tracking, build the UTM'd URL first (e.g. https://example.com/page?utm_source=instagram&utm_medium=organic&utm_campaign=book-launch) before calling this tool — the result is shortened as-is.",
+        },
+        customSlug: {
+          type: "string",
+          description:
+            "Optional. A human-readable slug for the short URL — e.g. 'launch' → storylink.to/launch. If omitted, Switchy picks a random short slug. Keep to lowercase letters, numbers, and hyphens.",
+        },
+        note: {
+          type: "string",
+          description:
+            "Optional free-form note saved with the link in Switchy's dashboard. Useful for the author to remember what a link was for later. Example: 'Curses and Currents — Instagram carousel'.",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Optional list of tags (max ~5). Tags show up in Switchy's dashboard and help filter by campaign/source/book.",
+        },
+        sourceType: {
+          type: "string",
+          enum: [
+            "manual",
+            "utm_builder",
+            "compose",
+            "campaign_auto",
+            "template_auto",
+          ],
+          description:
+            "Where the shortening is happening, used for the Links dashboard filter. Default 'manual'. If Claude is shortening as part of drafting a post, use 'compose'.",
+        },
+        campaignId: {
+          type: "string",
+          description:
+            "Optional. If the link is for a specific campaign, pass the campaign ID so the link shows up under that campaign in the Links dashboard.",
+        },
+      },
+      required: ["url"],
+    },
+  },
 ];
 
 // ── Tool Handlers ──
@@ -230,6 +281,9 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
     case "aa_schedule_campaign":
       return apiCall(`/campaigns/${args.campaignId}/schedule`, { method: "POST", body: args });
+
+    case "aa_shorten_url":
+      return apiCall("/shorten", { method: "POST", body: args });
 
     default:
       throw new Error(`Unknown tool: ${name}`);

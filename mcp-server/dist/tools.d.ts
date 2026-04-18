@@ -36,6 +36,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required?: undefined;
     };
@@ -71,6 +76,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required?: undefined;
     };
@@ -109,6 +119,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required?: undefined;
     };
@@ -179,6 +194,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required: string[];
     };
@@ -221,6 +241,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required?: undefined;
     };
@@ -265,6 +290,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required: string[];
     };
@@ -303,6 +333,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required: string[];
     };
@@ -346,6 +381,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required: string[];
     };
@@ -397,6 +437,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required: string[];
     };
@@ -408,6 +453,7 @@ export declare const TOOLS: ({
         properties: {
             campaignId: {
                 type: string;
+                description?: undefined;
             };
             plan: {
                 type: string;
@@ -483,6 +529,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required: string[];
     };
@@ -494,6 +545,7 @@ export declare const TOOLS: ({
         properties: {
             campaignId: {
                 type: string;
+                description?: undefined;
             };
             platform?: undefined;
             count?: undefined;
@@ -520,6 +572,11 @@ export declare const TOOLS: ({
             scheduleMode?: undefined;
             accountMap?: undefined;
             postTimes?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
         };
         required: string[];
     };
@@ -531,6 +588,7 @@ export declare const TOOLS: ({
         properties: {
             campaignId: {
                 type: string;
+                description?: undefined;
             };
             startDate: {
                 type: string;
@@ -576,6 +634,73 @@ export declare const TOOLS: ({
             platforms?: undefined;
             content_mix?: undefined;
             plan?: undefined;
+            url?: undefined;
+            customSlug?: undefined;
+            note?: undefined;
+            tags?: undefined;
+            sourceType?: undefined;
+        };
+        required: string[];
+    };
+} | {
+    name: string;
+    description: string;
+    inputSchema: {
+        type: "object";
+        properties: {
+            url: {
+                type: string;
+                description: string;
+            };
+            customSlug: {
+                type: string;
+                description: string;
+            };
+            note: {
+                type: string;
+                description: string;
+            };
+            tags: {
+                type: string;
+                items: {
+                    type: string;
+                };
+                description: string;
+            };
+            sourceType: {
+                type: string;
+                enum: string[];
+                description: string;
+            };
+            campaignId: {
+                type: string;
+                description: string;
+            };
+            platform?: undefined;
+            count?: undefined;
+            content?: undefined;
+            accountIds?: undefined;
+            publishNow?: undefined;
+            scheduledAt?: undefined;
+            timezone?: undefined;
+            mediaItems?: undefined;
+            tiktokOptions?: undefined;
+            status?: undefined;
+            limit?: undefined;
+            postId?: undefined;
+            filename?: undefined;
+            contentType?: undefined;
+            size?: undefined;
+            name?: undefined;
+            objective?: undefined;
+            duration_days?: undefined;
+            platforms?: undefined;
+            content_mix?: undefined;
+            plan?: undefined;
+            startDate?: undefined;
+            scheduleMode?: undefined;
+            accountMap?: undefined;
+            postTimes?: undefined;
         };
         required: string[];
     };
