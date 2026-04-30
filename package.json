@@ -1,6 +1,6 @@
 {
   "name": "claude-code-author-automations",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Claude Code / Cowork plugin for Author Automations Social",
   "private": true,
   "scripts": {

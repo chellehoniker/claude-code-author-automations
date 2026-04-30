@@ -46,8 +46,7 @@ export const TOOLS = [
       "   Use these for the common cases. Field names are camelCase here.",
       "",
       "2) RAW platformOptions: { instagram: {...}, threads: {...}, twitter: {...}, ... }.",
-      "   Forwarded directly to Zernio's platformSpecificData using the EXACT field",
-      "   names from Zernio docs (https://docs.zernio.com/guides/platform-settings).",
+      "   Forwarded directly to the upstream platformSpecificData payload.",
       "   Use this for anything not in the typed list, OR for platforms we haven't",
       "   typed yet (twitter, bluesky, telegram, snapchat, googlebusiness, discord, whatsapp).",
       "",
@@ -111,7 +110,7 @@ export const TOOLS = [
       "linkedinOptions: documentTitle, organizationUrn, firstComment, disableLinkPreview",
       "",
       "═══ EVERYTHING ELSE ═══",
-      "Use raw platformOptions with exact Zernio field names. Examples:",
+      "Use raw platformOptions with the platform-native field names. Examples:",
       "  platformOptions: { twitter: { replyToTweetId, replySettings, threadItems, poll, longVideo } }",
       "  platformOptions: { telegram: { parseMode: 'Markdown', disableWebPagePreview: true } }",
       "  platformOptions: { discord: { channelId, embeds, poll, forumThreadName, forumAppliedTags } }",
@@ -263,7 +262,7 @@ export const TOOLS = [
         },
         platformOptions: {
           type: "object",
-          description: "Raw passthrough to Zernio's platformSpecificData. Keys are platform names; values are objects with EXACT Zernio field names. Use for Twitter, Bluesky, Telegram, Snapchat, Google Business, Discord, WhatsApp — and for any field not covered by the typed *Options above.",
+          description: "Raw passthrough to the upstream platformSpecificData. Keys are platform names; values are objects using the platform-native field names. Use for Twitter, Bluesky, Telegram, Snapchat, Google Business, Discord, WhatsApp — and for any field not covered by the typed *Options above.",
           properties: {
             instagram: { type: "object" },
             tiktok: { type: "object" },

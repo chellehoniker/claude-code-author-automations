@@ -1,6 +1,6 @@
 {
   "name": "author-automations-social",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Create and schedule social media posts, run AI campaigns, and manage your Author Automations Social account from Claude Code or Claude Cowork. Supports 14 platforms including Instagram, TikTok, Facebook, LinkedIn, and more.",
   "author": {
     "name": "Author Automations",
