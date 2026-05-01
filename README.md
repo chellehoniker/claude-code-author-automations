@@ -13,6 +13,8 @@ The plugin bundles a remote MCP server hosted at `https://authorautomations.soci
 
 After install, run `/mcp` in Claude Code (or use Cowork's connector authorize prompt) to sign in to your Author Automations Social account. You'll be redirected to a consent screen; click **Approve** and tools become available.
 
+> Need a step-by-step walkthrough? See the canonical connect guide: **[authorautomations.social/docs/connect](https://authorautomations.social/docs/connect)** — covers Cowork, Claude Code, and the REST API in one place, with credential generation and troubleshooting.
+
 ## Quick start
 
 ```
@@ -34,7 +36,7 @@ Claude reads your brand guides, writes platform-specific captions, generates med
 | Component | Triggers / Notes |
 |---|---|
 | **15 MCP tools** | `aa_list_accounts`, `aa_create_post`, `aa_create_campaign`, etc. — full reference at [/docs/api](https://authorautomations.social/docs/api) |
-| **Skills** (markdown chat guides) | `aa-setup`, `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair) |
+| **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair) |
 | **Slash commands** | `/aa-post <topic>`, `/aa-campaign <objective>` |
 
 The skills make Claude fluent in platform-specific options. Saying "schedule 8 trial reels" auto-routes through the `instagram-reels` skill which knows the right `instagramOptions.trialParams` shape.
@@ -50,7 +52,7 @@ This plugin uses OAuth 2.1 (Authorization Code with PKCE). On first tool call, C
 
 You can revoke connector access anytime in [Settings → Cowork Connector](https://authorautomations.social/dashboard/settings).
 
-If you have multiple pen names, the active connector is bound to the account you authorized with. Multi-pen-name switching from the plugin is on the roadmap.
+If you have multiple pen names, the connector authorizes against your account and exposes every pen name you have access to. Switch between them by saying *"post under my [pen name]"* or *"switch to [pen name]"* — the bundled `pen-names` skill teaches Claude how to discover your pen names and route subsequent calls. See `skills/pen-names/SKILL.md`.
 
 ## Updating
 
@@ -72,8 +74,8 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 
 ## Support
 
-- Docs: [authorautomations.social/docs/api](https://authorautomations.social/docs/api)
-- Connect guide: [authorautomations.social/docs/connect](https://authorautomations.social/docs/connect)
+- **Connect guide:** [authorautomations.social/docs/connect](https://authorautomations.social/docs/connect) — install + credentials + troubleshooting
+- API reference: [authorautomations.social/docs/api](https://authorautomations.social/docs/api)
 - Email: support@authorautomations.com
 - Bugs / feature requests: [open an issue](https://github.com/chellehoniker/claude-code-author-automations/issues)
 
