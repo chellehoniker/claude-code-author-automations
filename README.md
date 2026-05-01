@@ -1,114 +1,64 @@
 # Author Automations Social — Claude Plugin
 
-Create and schedule social media posts, run AI-powered campaigns, and manage your content across **14 platforms** directly from Claude Code or Claude Cowork.
-
-## What It Does
-
-This plugin connects Claude to your [Author Automations Social](https://authorautomations.social) account, letting you:
-
-- **Create posts** with platform-specific captions (Instagram, TikTok, Facebook, LinkedIn, Twitter/X, WhatsApp, and 8 more)
-- **Run AI campaigns** — Claude writes your captions using your brand voice, while AI generates images and videos
-- **Schedule content** — publish now, schedule for later, or fill your posting queue
-- **Upload media** — attach images and videos to your posts
-
-### The Hybrid AI Model
-
-Unlike typical integrations where a server-side AI writes your content, this plugin lets **Claude write your captions directly**. Claude reads your brand guides, understands your current project context, and crafts platform-specific captions that match your voice. Media generation (images, videos, music) happens server-side via FreePik AI.
+Schedule social posts, run AI campaigns, and manage your content calendar from Claude Code or Claude Cowork — across **15 platforms** including Instagram (Trial Reels, Stories, feed carousels), TikTok (with auto trending music), Threads (topic chains), YouTube Shorts, Facebook, LinkedIn, X, Pinterest, Reddit, Bluesky, Snapchat, Telegram, Google Business, WhatsApp, and Discord.
 
 ## Install
-
-This repo is its own Claude plugin marketplace. Two commands in Claude Code or Cowork — no clone, no build, no npm install on your end:
 
 ```
 /plugin marketplace add https://github.com/chellehoniker/claude-code-author-automations
 /plugin install author-automations-social@author-automations
 ```
 
-That's it. Claude Code downloads the plugin on demand.
+The plugin bundles a remote MCP server hosted at `https://authorautomations.social/api/mcp` — **no local install, no Node, no binary download.** Skills, slash commands, and the connector are all packaged together.
 
-## Setup
+After install, run `/mcp` in Claude Code (or use Cowork's connector authorize prompt) to sign in to your Author Automations Social account. You'll be redirected to a consent screen; click **Approve** and tools become available.
 
-### 1. Get your API key
-
-1. Log in at [authorautomations.social](https://authorautomations.social)
-2. Go to **Settings → API Key**
-3. Click **Generate API Key**
-4. Copy the key (starts with `aa_sk_`)
-
-### 2. Connect your account
-
-In any Claude conversation, run:
+## Quick start
 
 ```
-/author-automations-social:aa-setup
+/aa-post My new cozy mystery is available for pre-order!
 ```
 
-Paste your API key when Claude asks. It's stored locally in your Claude config and never leaves your machine.
+Or just describe what you want:
 
-### 3. Fill out your AI content guides (one-time)
+> "Create a 14-day social media campaign to launch Curses and Currents across Instagram, TikTok, and Facebook"
 
-Back at [authorautomations.social](https://authorautomations.social) → **Settings → AI Configuration**. Fill out all four:
+> "Schedule 4 Trial Reels for next week — auto-graduate based on engagement"
 
-- **Prose Guide** — your writing voice and tone
-- **Brand Guide** — your author identity and values
-- **Copywriting Guide** — persuasion principles you use
-- **Social Media Guide** — platform-specific strategies and hashtag habits
+> "Post to Threads under the Book Threads topic"
 
-Claude reads all four before writing any caption. Fifteen minutes here makes every post downstream sound like you.
+Claude reads your brand guides, writes platform-specific captions, generates media via Freepik when needed, and schedules everything to your calendar or queue. You review every post before anything goes live.
 
-## Usage
+## What's bundled
 
-### Quick Post
+| Component | Triggers / Notes |
+|---|---|
+| **15 MCP tools** | `aa_list_accounts`, `aa_create_post`, `aa_create_campaign`, etc. — full reference at [/docs/api](https://authorautomations.social/docs/api) |
+| **Skills** (markdown chat guides) | `aa-setup`, `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair) |
+| **Slash commands** | `/aa-post <topic>`, `/aa-campaign <objective>` |
 
-```
-/author-automations-social:aa-post My new cozy mystery is available for pre-order!
-```
+The skills make Claude fluent in platform-specific options. Saying "schedule 8 trial reels" auto-routes through the `instagram-reels` skill which knows the right `instagramOptions.trialParams` shape.
 
-Or just tell Claude what you want:
+## Authentication
 
-> "Create a post about my book launch for Instagram and TikTok"
+This plugin uses OAuth 2.1 (Authorization Code with PKCE). On first tool call, Claude prompts you to authorize the connector:
 
-Claude reads your guides, writes unique captions for each platform, and schedules the post.
+1. Click the authorize link Claude shows
+2. Sign in to your Author Automations Social account in the browser
+3. Click **Approve** on the consent screen
+4. Browser closes, tools become available in Claude
 
-### AI Campaign
+You can revoke connector access anytime in [Settings → Cowork Connector](https://authorautomations.social/dashboard/settings).
 
-```
-/author-automations-social:aa-campaign 14-day campaign for my spring book launch
-```
-
-Or describe it:
-
-> "Create a 14-day social media campaign to promote Curses and Currents across Instagram, TikTok, and Facebook"
-
-Claude will:
-1. Ask about your objective and platforms
-2. Read your brand/prose/social media guides
-3. Write day-by-day captions tailored to each platform
-4. Generate images and video via FreePik AI (2–3 min per video)
-5. Schedule everything to your content calendar or queue
-
-### Available Tools
-
-| Tool | Description |
-|------|-------------|
-| `aa_list_accounts` | See your connected social accounts |
-| `aa_create_post` | Create and schedule a post |
-| `aa_list_posts` | View your scheduled/published posts |
-| `aa_update_post` | Edit a scheduled post |
-| `aa_delete_post` | Remove a post |
-| `aa_upload_media` | Get a presigned URL for media upload |
-| `aa_get_guides` | Read your content guides (brand, prose, social) |
-| `aa_queue_preview` | See upcoming queue slots |
-| `aa_create_campaign` | Start a new campaign |
-| `aa_save_campaign_plan` | Save a content plan to a campaign |
-| `aa_generate_media` | Generate images/videos for a campaign |
-| `aa_check_media_status` | Check media generation progress |
-| `aa_schedule_campaign` | Schedule all campaign posts |
-| `aa_list_campaigns` | View your campaigns |
+If you have multiple pen names, the active connector is bound to the account you authorized with. Multi-pen-name switching from the plugin is on the roadmap.
 
 ## Updating
 
-Claude Code handles updates automatically when you re-run the marketplace install. To force a refresh:
+### Claude Cowork
+
+Settings → Plugins → three-dot menu next to the marketplace → toggle **Sync automatically** ON. Updates flow as we ship them. To force a check, click **Check for updates**.
+
+### Claude Code (CLI)
 
 ```
 /plugin update author-automations-social@author-automations
@@ -118,26 +68,24 @@ Claude Code handles updates automatically when you re-run the marketplace instal
 
 - An active [Author Automations Social](https://authorautomations.social) subscription ($29/month or $290/year)
 - At least one connected social media account
-- An API key from Settings
+- Modern browser (for the OAuth authorize step)
 
 ## Support
 
 - Docs: [authorautomations.social/docs/api](https://authorautomations.social/docs/api)
+- Connect guide: [authorautomations.social/docs/connect](https://authorautomations.social/docs/connect)
 - Email: support@authorautomations.com
 - Bugs / feature requests: [open an issue](https://github.com/chellehoniker/claude-code-author-automations/issues)
 
-## For developers
+## What's new in v3.0
 
-Pre-built artifacts live in `mcp-server/dist/` so the plugin works immediately after a marketplace install. To hack on the plugin locally:
+- **Bundled remote MCP server.** No local Node, no bun-compiled binary, no SessionStart hook. Plugin install is metadata + skills only; tools are served from `authorautomations.social/api/mcp`.
+- **OAuth 2.1 with PKCE.** First-time authorize via consent screen, then tokens auto-refresh.
+- **Works identically on Cowork (any OS) and Claude Code CLI.** Single install path.
 
-```
-git clone https://github.com/chellehoniker/claude-code-author-automations
-cd claude-code-author-automations
-npm install
-npm run build
-```
+### Migration from v2.x
 
-Source lives in `mcp-server/`. Commits that change the server code should re-run `npm run build` and include the updated `dist/`.
+If you previously installed v2.x and have a bun-compiled binary on disk, the v3.0 update strips the local-server config and switches to the remote MCP. No action needed beyond the regular update — just sync via the marketplace and restart.
 
 ## License
 

@@ -104,6 +104,17 @@ Tell them how many posts were scheduled and when the first one goes out.
 - **Pinterest**: Keyword-rich for search discovery.
 - **Threads**: Casual, community-focused, under 500 chars.
 
+## Platform options per day (read these specialist skills if a day's plan needs them)
+
+A campaign can mix Reels, Stories, and feed posts across days. When a day's plan triggers a richer set of options, delegate to the right specialist skill rather than embedding the rules here:
+
+- **Instagram Reels / Trial Reels / Stories** → `instagram-reels` skill. Trial Reels (`trialParams.graduationStrategy: 'SS_PERFORMANCE'` for set-and-forget, `'MANUAL'` for author-controlled) are particularly effective for indie author promo right now. Use them on launch-tease days where you want non-follower reach first.
+- **Threads topics** → `threads-post` skill. If the campaign has a hashtag like `#BookThreads` running through it, set `threadsOptions.topicTag` to match so each day's Threads post files under the same topic.
+- **YouTube videos / Shorts** → `youtube-video` skill. Title is required per video (1–100 chars, separate from caption). For AI-generated video days, set `containsSyntheticMedia: true`.
+- **Reddit cross-posts** → `reddit-post` skill. Each subreddit has its own flair conventions; Reddit days in a campaign typically post once per subreddit, not as a mass blast.
+
+For a Reel day specifically: when planning the imagePrompt for a Reel, also plan the **cover image** prompt — the cover is what shows in the user's feed before the video plays, so it needs to stop the scroll. Generate the cover via Freepik and pass the public URL as `instagramOptions.coverImage` when scheduling.
+
 ## Campaign Arc Strategies
 For a book launch:
 1. **Tease** (days 1-3): Behind-the-scenes, mood boards, character hints

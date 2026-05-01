@@ -1,2 +1,4 @@
-node_modules/
-*.js.map
+# v3.0 — pure plugin, no local server. Nothing meaningful to ignore
+# in a plugin-only repo, but keep this stub in case future tooling
+# generates side files.
+.DS_Store

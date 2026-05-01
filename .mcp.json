@@ -1,9 +1,8 @@
 {
   "mcpServers": {
     "author-automations": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp-server/dist/index.js"]
+      "type": "http",
+      "url": "https://authorautomations.social/api/mcp"
     }
   }
 }
