@@ -1,6 +1,6 @@
 {
   "name": "author-automations-social",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "description": "Skills and slash commands for Author Automations Social. Pairs with the manually-added Author Automations connector at https://authorautomations.social/api/mcp. Supports 15 platforms including Instagram (Trial Reels), TikTok, Threads (topic chains), YouTube Shorts, and more.",
   "author": {
     "name": "Author Automations",
