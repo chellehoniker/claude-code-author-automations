@@ -11,7 +11,7 @@
       "name": "author-automations-social",
       "source": "./",
       "description": "Schedule social posts, run AI campaigns, and manage your content calendar across 15 platforms — Trial Reels, Threads chains, YouTube Shorts, the lot. Bundled remote MCP server (no install). Pairs with an Author Automations Social subscription.",
-      "version": "3.2.0"
+      "version": "3.3.0"
     }
   ]
 }
