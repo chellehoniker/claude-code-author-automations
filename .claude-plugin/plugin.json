@@ -1,6 +1,6 @@
 {
   "name": "author-automations-social",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Create and schedule social media posts, run AI campaigns, and manage your Author Automations Social account from Claude Code or Claude Cowork. Bundled remote MCP server — no local install or runtime needed. Supports 15 platforms including Instagram (with Trial Reels), TikTok, Threads (topic chains), YouTube Shorts, and more.",
   "author": {
     "name": "Author Automations",
@@ -22,5 +22,20 @@
     "youtube-shorts",
     "authors",
     "marketing"
-  ]
+  ],
+  "userConfig": {
+    "client_id": {
+      "type": "string",
+      "title": "Client ID",
+      "description": "Generate at https://authorautomations.social/dashboard/settings → Claude Connector → Generate credential pair. Starts with 'aacw_'.",
+      "required": true
+    },
+    "client_secret": {
+      "type": "string",
+      "title": "Client Secret",
+      "description": "The other half of the credential pair. Starts with 'aacs_'. Shown only once when generated — copy carefully.",
+      "sensitive": true,
+      "required": true
+    }
+  }
 }
