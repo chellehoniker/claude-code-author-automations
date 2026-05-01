@@ -1,13 +1,13 @@
 {
   "name": "author-automations-social",
-  "version": "1.6.0",
-  "description": "Create and schedule social media posts, run AI campaigns, and manage your Author Automations Social account from Claude Code or Claude Cowork. Supports 14 platforms including Instagram, TikTok, Facebook, LinkedIn, and more.",
+  "version": "3.0.0",
+  "description": "Create and schedule social media posts, run AI campaigns, and manage your Author Automations Social account from Claude Code or Claude Cowork. Bundled remote MCP server — no local install or runtime needed. Supports 15 platforms including Instagram (with Trial Reels), TikTok, Threads (topic chains), YouTube Shorts, and more.",
   "author": {
     "name": "Author Automations",
     "email": "support@authorautomations.com",
     "url": "https://authorautomations.social"
   },
-  "homepage": "https://authorautomations.social/docs/api",
+  "homepage": "https://authorautomations.social/docs/connect",
   "repository": "https://github.com/chellehoniker/claude-code-author-automations",
   "license": "MIT",
   "keywords": [
@@ -17,6 +17,9 @@
     "ai-campaigns",
     "instagram",
     "tiktok",
+    "threads",
+    "trial-reels",
+    "youtube-shorts",
     "authors",
     "marketing"
   ]
