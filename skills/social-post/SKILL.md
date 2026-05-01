@@ -16,6 +16,7 @@ This is the **orchestrator**. It handles the universal flow: read guides, list a
 
 | User says... | Use this skill... |
 |---|---|
+| "Post under my [pen name]," "switch to [pen name]," "schedule for [pen name]" | `pen-names` (call FIRST — it sets the profileId every other tool needs) |
 | "Trial Reel," "post a Reel," "Story for IG," "Reel cover" | `instagram-reels` |
 | "Threads topic," "thread chain on Threads" | `threads-post` |
 | "YouTube video," "schedule a YT Short," "playlist" | `youtube-video` |
@@ -23,6 +24,8 @@ This is the **orchestrator**. It handles the universal flow: read guides, list a
 | Generic "post to <platform>" with no special features | Stay here |
 
 The specialist skills write the `*Options` block. This skill takes that block, adds scheduling, and calls `aa_create_post`.
+
+**Pen-name handling:** if `pen-names` was invoked first and resolved a non-primary `profileId`, **carry that `profileId` through to every subsequent tool call in this conversation** — `aa_get_guides`, `aa_list_accounts`, `aa_create_post`, etc. Without it, calls go back to the user's primary pen name and the user gets cross-pen-name surprises.
 
 ## Flow
 
