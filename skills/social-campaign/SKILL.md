@@ -22,8 +22,20 @@ Ask:
 - Which platforms? (call `aa_list_accounts` to see what's connected)
 - What type of content? (images only, full mix with carousels/videos, videos only)
 
-### Step 2: Read Their Guides
-Call `aa_get_guides` to get their brand voice, writing style, and social strategy. Read all guides carefully before writing any captions.
+### Step 2: Pick the right brand voice (multi-tagged guides)
+
+A pen name can have MANY content-guide sets — each with its own prose, brand, copywriting, and social strategy — keyed by a tag. Default is `primary`. Authors who write under one pen name across multiple sub-brands (cozy mystery vs thriller, sweet vs spicy romance, fiction vs nonfiction) often have separate tagged sets.
+
+If the user mentions a series, sub-brand, or specific voice (*"use my Cozy Mystery voice", "for my spicy romance series", "write in my thriller tone"*):
+
+1. Call `aa_list_guide_sets` first to see what tagged sets exist for the active pen name.
+2. Match the user's intent to a tag (case-insensitive substring match is fine — "cozy mystery" likely matches a tag like "Cozy Mystery Series").
+3. Call `aa_get_guides({ tag: "<matched-tag>" })` to read that specific set.
+4. Pass `guideTag: "<matched-tag>"` when creating the campaign in Step 3.
+
+If the user doesn't mention a series or sub-brand, skip the list step and just call `aa_get_guides` (defaults to `primary`). For first-time users `primary` is the only set anyway.
+
+If `aa_list_guide_sets` shows multiple sets but the user gave no signal, ASK: *"You have guide sets for [list tags]. Which voice should I use for this campaign?"* — don't guess.
 
 ### Step 3: Create the Campaign Record
 Call `aa_create_campaign` with:
@@ -33,9 +45,12 @@ Call `aa_create_campaign` with:
   "objective": "What they told you",
   "duration_days": 7,
   "platforms": ["instagram", "tiktok", "facebook"],
-  "content_mix": "mixed"
+  "content_mix": "mixed",
+  "guideTag": "Cozy Mystery Series"
 }
 ```
+
+`guideTag` is optional — omit it (or pass null) to use the primary brand voice. When set, the server-side AI campaign-builder reads the tagged set's guides for every generation in this campaign, and stores the choice on the campaign row so regenerations stay on the same voice.
 
 ### Step 4: Write the Content Plan
 Create the full plan yourself. For each day, write:
