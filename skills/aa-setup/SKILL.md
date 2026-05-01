@@ -12,13 +12,14 @@ description: Use when the user wants to set up, configure, or connect Author Aut
 - The `aa_*` tools aren't appearing at all in your tool list
 - User asks how to get started with social media scheduling
 
-## How v3.2+ authentication works
+## How v3.3+ setup works
 
-The plugin bundles a remote HTTP MCP server at `https://authorautomations.social/api/mcp`. Authentication is a **Client ID + Client Secret pair** the user generates from their dashboard. The plugin manifest declares both fields as required `userConfig`, so the host (Cowork / Claude Code) prompts for them at install time and won't activate the connector until they're pasted in. Once activated, the credentials are sent on every MCP request as HTTP headers (`X-Aa-Client-Id` and `X-Aa-Client-Secret`) and validated server-side against the `oauth_clients` table.
+Two parts, intentionally split:
 
-There is no Bearer token to mint, no browser OAuth dance to run, no local config file, no API key paste, no Node prerequisite.
+1. **The connector** — added manually via Cowork's "Add custom connector" dialog. Lives at `https://authorautomations.social/api/mcp` and authenticates with a Client ID + Client Secret pair the user generates from their dashboard. Cowork runs OAuth `client_credentials` against our token endpoint and mints a Bearer JWT for each MCP request.
+2. **The plugin** — installed via the marketplace. Adds skills (`pen-names`, `instagram-reels`, `threads-post`, etc.) and slash commands (`/aa-post`, `/aa-campaign`). No connector bundled.
 
-The user generates the pair at: `https://authorautomations.social/dashboard/settings` → **Claude Connector** card → **Generate credential pair**. The Client ID starts with `aacw_`, the Client Secret starts with `aacs_`. The Secret is shown only once. The full install walkthrough lives at `https://authorautomations.social/docs/connect`.
+Earlier plugin versions (v3.0–v3.2) tried to bundle the connector via `.mcp.json`. That auto-created a connector entry with the OAuth Client ID/Secret fields LOCKED, so users couldn't enter credentials and the OAuth dance silently failed. v3.3 removes the bundled connector — splitting setup in two unblocks the credential paste.
 
 ## Setup Flow
 
@@ -28,36 +29,39 @@ Call `aa_list_accounts`. Three possible outcomes:
 
 **(a) Tool returns data or an empty list** — connected and authorized. Skip to Step 4.
 
-**(b) Tool returns `Invalid client credentials` / 401** — credentials are wrong, missing, or revoked. Go to Step 2.
+**(b) Tool returns 401 / "Invalid client credentials"** — connector exists but credentials are wrong, missing, or revoked. Go to Step 2.
 
-**(c) `aa_list_accounts` isn't an available tool at all** — the MCP connector didn't load. Go to Step 3.
+**(c) `aa_list_accounts` isn't an available tool at all** — no connector exists. Go to Step 3.
 
-### Step 2 — Re-paste the credential pair
+### Step 2 — Update the connector's credentials
 
-This is the most common case. Tell the user:
+Tell the user:
 
-> "The plugin needs a fresh Client ID and Client Secret. Open https://authorautomations.social/dashboard/settings, find the **Claude Connector** card, click **Generate credential pair**, and copy both values. The Client Secret is shown only once — copy carefully."
+> "The connector needs a fresh Client ID and Client Secret. Open https://authorautomations.social/dashboard/settings, find the **Claude Connector** card, click **Generate credential pair**, and copy both values. The Client Secret is shown only once — copy carefully."
 
 Then walk them through pasting:
 
-**In Cowork:** Settings → Plugins → find Author Automations Social → click the gear icon next to the plugin → paste Client ID + Client Secret into the prompted fields → Save. The connector should re-authenticate within seconds.
+> "In Cowork: **Settings → Connectors**, click the **Author Automations** connector, scroll to **Advanced settings**, paste the new Client ID and Client Secret, and click Save. The connector should re-authenticate within seconds."
 
-**In Claude Code:** Run `/plugin config author-automations-social` (or edit your user-settings JSON for this plugin) and update `client_id` and `client_secret`. Then re-enable the plugin.
+If they still hit 401 after fresh credentials: check if the credentials they're using were generated under a different account than the one currently signed into Cowork. Each credential pair is bound to a specific dashboard user.
 
-If the user has an existing credential pair they don't want to regenerate, they can find it: the Client ID is visible on the **Claude Connector** card under "Active credentials." But the Secret is hashed server-side and unrecoverable — if they lost it, they MUST generate a new pair.
+### Step 3 — Add the connector for the first time
 
-### Step 3 — Connector didn't load at all
+Tell the user:
 
-Almost always one of these:
+> "First, generate a credential pair: open https://authorautomations.social/dashboard/settings, find the **Claude Connector** card, click **Generate credential pair**. Copy the Client ID (starts with `aacw_`) and Client Secret (starts with `aacs_`). The Secret is shown only once.
+>
+> Then in Cowork: **Settings → Connectors → Add custom connector**.
+> - Name: **Author Automations**
+> - Remote MCP server URL: `https://authorautomations.social/api/mcp`
+> - Open **Advanced settings** and paste the Client ID and Client Secret.
+> - Click **Add**.
+>
+> The connector goes live within seconds. After it's added, run any AA Social command and the tools should respond."
 
-1. **Cowork hasn't refreshed since the plugin installed.** Tell the user:
-   > "Fully quit Cowork (Cmd+Q on Mac, right-click tray icon → Quit on Windows — not just close the window) and reopen. The connector will attach on the next session."
+If the user previously installed plugin v3.0–v3.2 and has a stuck `author-automations` connector with locked OAuth fields, tell them:
 
-2. **Plugin install is on an older version.** v3.1 and earlier didn't prompt for credentials, leaving the connector in a half-installed state. Tell the user:
-   > "Open the marketplace: Settings → Plugins → click the three-dot menu on the marketplace and choose **Check for updates**. If 'Author Automations Social' shows v3.2 or newer, install it. Then disable and re-enable the plugin to trigger the credential prompt."
-
-3. **Network egress is locked down.** The remote MCP server lives at `authorautomations.social`. If Cowork can't reach it, no tools load. Tell the user:
-   > "Open Cowork **Settings → Capabilities → Allow Network Egress** and set it to **All Domains**. The connector needs to talk to authorautomations.social."
+> "Remove the existing connector first: **Settings → Connectors → author-automations → Remove**. Then add a fresh one with the steps above. The locked-field issue was a side-effect of how the old plugin bundled its connector — v3.3 unbundled it specifically so the manual flow with editable credentials is the only path."
 
 ### Step 4 — Confirm
 
@@ -66,7 +70,10 @@ Almost always one of these:
 ## Troubleshooting Reference
 
 ### "Connection has expired" / "Connection issue"
-The connector was created without credentials (typical of v3.0/v3.1 installs that pre-date the userConfig prompt). Or the credentials were revoked. Either way: disable + re-enable the plugin to re-trigger the prompt, then paste a fresh credential pair from Settings → Claude Connector.
+The connector's tokens expired and refresh failed (usually because credentials were revoked or rotated). Walk through Step 2 — generate a fresh credential pair and paste it into the existing connector's Advanced settings.
+
+### "Add custom connector" dialog has locked OAuth fields
+This happens when a plugin auto-installs a connector — Cowork locks the OAuth fields because it thinks the plugin manages them. The user should delete that auto-installed connector and add a fresh one via the global "Add custom connector" path (not from inside the plugin's Connectors panel). v3.3+ doesn't bundle a connector, so new installs shouldn't hit this — but legacy v3.0–v3.2 connectors need to be removed.
 
 ### "Update button is greyed out in Cowork"
 Cowork's marketplace cache hasn't caught up. Three-dot menu on the marketplace (not the plugin) → **Check for updates**. If it stays greyed out for more than a day, remove and re-add the marketplace.
@@ -85,9 +92,9 @@ See the `pen-names` skill for the full multi-pen-name flow.
 
 ## What the user does NOT need to do
 
-- Generate or paste an `aa_sk_` API key. That's for REST/Make.com/Zapier callers, not the plugin.
-- Run a browser OAuth flow. v3.2 dropped the browser-redirect Authorization Code dance — credentials go directly in the plugin config.
-- Edit `~/.config/author-automations/config.json`. The plugin doesn't use a local config file.
-- Install Node.js, bun, or any binary. The plugin is pure HTTP MCP.
+- Generate or paste an `aa_sk_` API key. That's for REST/Make.com/Zapier callers, not the connector.
+- Run a browser OAuth approval flow. v3.2 dropped that path — the connector uses `client_credentials` grant against our token endpoint and the user's pasted Client ID + Secret.
+- Edit `~/.config/author-automations/config.json`. Plugin doesn't use a local config file.
+- Install Node.js, bun, or any binary.
 
 If a user is following older instructions that mention any of those, they're reading v1, v2, or early-v3 docs. Point them at `https://authorautomations.social/docs/connect`.
