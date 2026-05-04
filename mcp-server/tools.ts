@@ -104,10 +104,17 @@ export const TOOLS = [
       "facebookOptions: contentType ('story' | 'reel'), title (Reel only), firstComment, pageId, draft",
       "",
       "═══ PINTEREST ═══",
-      "pinterestOptions: title, boardId, link, coverImageUrl, coverImageKeyFrameTime",
+      "pinterestOptions: title, boardId, link, coverImageUrl, coverImageKeyFrameTime, firstComment",
       "",
       "═══ LINKEDIN ═══",
       "linkedinOptions: documentTitle, organizationUrn, firstComment, disableLinkPreview",
+      "",
+      "═══ FIRST COMMENT (LinkedIn 40-50% reach win) ═══",
+      "`firstComment` is available on linkedinOptions, instagramOptions, facebookOptions,",
+      "pinterestOptions, and youtubeOptions — auto-posted as the first comment after publish.",
+      "For posts with external links targeting LinkedIn, prefer putting the URL in",
+      "`linkedinOptions.firstComment` rather than the caption — LinkedIn suppresses link-bearing",
+      "post reach 40-50%. Caps: LinkedIn/Pinterest/YouTube 10000, Facebook 8000, Instagram 2200.",
       "",
       "═══ EVERYTHING ELSE ═══",
       "Use raw platformOptions with the platform-native field names. Examples:",
@@ -249,6 +256,7 @@ export const TOOLS = [
             link: { type: "string" },
             coverImageUrl: { type: "string" },
             coverImageKeyFrameTime: { type: "number" },
+            firstComment: { type: "string", description: "Auto-posted as first comment after publish (max 10000 chars)" },
           },
         },
         linkedinOptions: {
@@ -256,7 +264,7 @@ export const TOOLS = [
           properties: {
             documentTitle: { type: "string" },
             organizationUrn: { type: "string" },
-            firstComment: { type: "string" },
+            firstComment: { type: "string", description: "Auto-posted as first comment after publish (max 10000 chars). LinkedIn suppresses link-bearing post reach 40-50% — put external URLs here instead of the caption." },
             disableLinkPreview: { type: "boolean" },
           },
         },
@@ -287,7 +295,12 @@ export const TOOLS = [
   },
   {
     name: "aa_list_posts",
-    description: "List the user's posts with optional filters.",
+    description:
+      "List the user's posts with optional filters. " +
+      "Each post has a platforms[] array (one entry per platform leg). " +
+      "When referring to which account a post belongs to, use platforms[i].platformSpecificData.__usernameSnapshot (snapshot at schedule-time, always safe) — " +
+      "do NOT trust accountId.username or accountId.displayName from a populated accountId object (can be substituted when the original account was deleted upstream). " +
+      "If accountId._id isn't in aa_list_accounts for this user, treat the binding as unknown.",
     inputSchema: {
       type: "object" as const,
       properties: {

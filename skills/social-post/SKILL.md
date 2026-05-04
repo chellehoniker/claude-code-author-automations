@@ -83,7 +83,23 @@ Ask when to post:
 
 Call `aa_create_post` with the content, accountIds, scheduling options, and any platform `*Options` blocks the specialist skills wrote.
 
-### 10. Confirm
+### 10. Surface preflight warnings
+
+If the `aa_create_post` response includes a non-empty `warnings[]` array, tell the user about each one in plain language BEFORE the confirmation. Each warning has a `title` (what's the issue) and a `fix` (what to do about it) — the server already wrote both in user-facing prose, so quote them or paraphrase lightly.
+
+These are non-blocking — the post was still created. Common ones:
+- TikTok caption longer than ~150 chars (engagement falls off; front-load the hook)
+- Instagram caption longer than ~1800 chars (clipped in feed previews)
+- Facebook caption longer than ~5000 chars
+- Image/video aspect ratio doesn't match the platform's preferred shape
+- Video shorter than the platform's recommended length (LinkedIn / Pinterest)
+
+Example phrasing:
+> "Posted to TikTok and Instagram. Heads-up: TikTok will preview-clip your caption around character 150 — engagement on TikTok tends to drop past that, so front-loading the hook can help."
+
+If there are no warnings, skip this step.
+
+### 11. Confirm
 Show what was created and when it will post.
 
 ## Important Notes
@@ -92,3 +108,11 @@ Show what was created and when it will post.
 - If posting to TikTok, default `tiktokOptions.draft` to `false` so it publishes live (the server already handles this)
 - Use the user's timezone (ask if not known)
 - For platforms with rich options (IG/Threads/YT/Reddit), let the specialist skills do their job — they catch validation issues locally and avoid round-trips to the upstream API
+
+## Cross-tenant safety (when reading post responses)
+
+Post responses include a `platforms[]` array, one entry per platform leg. When you need to refer to *which account* a post belongs to (in summaries, error messages, "your post on X failed" copy):
+
+- **Authoritative identity**: `platforms[i].platformSpecificData.__usernameSnapshot`. Captured at schedule-time, never repopulated upstream — it's the snapshot of the user's own handle as it was when the post was created. Always safe.
+- **Do NOT trust** `platforms[i].accountId.username` or `platforms[i].accountId.displayName` from a populated `accountId` object. The scheduling provider can substitute a different connection's record when the original was deleted upstream. Our API boundary now strips known cross-profile substitutions, but treating `__usernameSnapshot` as the authoritative source is belt + suspenders.
+- **If `accountId._id` doesn't appear in `aa_list_accounts`** for the current user, treat the binding as unknown. Tell the user something like "this post references an account that's no longer in your workspace" — do NOT speculate about who it might belong to or quote any name you can't ground in the user's own `aa_list_accounts` response.
