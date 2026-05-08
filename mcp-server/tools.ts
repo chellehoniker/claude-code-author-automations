@@ -7,6 +7,14 @@ import { apiCall } from "./client.js";
 export const TOOLS = [
   // ── Account & Context ──
   {
+    name: "aa_list_profiles",
+    description:
+      "List every pen-name profile this credential can address. " +
+      "An API key with a restricted allowlist returns only the pen names in its allowlist (NOT every pen name on the underlying user). " +
+      "Use this to populate a pen-name picker before any other call — the X-Profile-Id header on subsequent calls must be one of these IDs.",
+    inputSchema: { type: "object" as const, properties: {} },
+  },
+  {
     name: "aa_list_accounts",
     description: "List the user's connected social media accounts. Returns account IDs (needed for creating posts), platform names, and usernames.",
     inputSchema: {
@@ -31,8 +39,68 @@ export const TOOLS = [
       },
     },
   },
+  {
+    name: "aa_list_queues",
+    description:
+      "List the user's posting queues (queue definitions, not next-slot previews — use aa_queue_preview for that). " +
+      "Each queue is a recurring set of slots with optional per-platform decoration: a queue can fan out per-platform (e.g., one queue with [instagram, tiktok] populates the next IG slot AND the next TikTok slot). " +
+      "Returns queue IDs you can pass to scheduling.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        queueId: { type: "string", description: "Specific queue to fetch" },
+        all: { type: "boolean", description: "Return all queues regardless of state" },
+      },
+    },
+  },
 
   // ── Posts ──
+  {
+    name: "aa_preflight_post",
+    description: [
+      "Validate a draft post WITHOUT scheduling. Returns the same blockers/warnings",
+      "aa_create_post would surface, but with zero side effects — safe to call before",
+      "every submit, in a builder UI, or from an automation that wants to verify a",
+      "draft is postable.",
+      "",
+      "Returns { ok, blockers[], warnings[], accounts[] } where:",
+      "  blockers: hard failures (caption too long for platform, missing required field,",
+      "            account disconnected, media aspect ratio invalid for IG, etc.).",
+      "  warnings: soft hints (no caption, link in LinkedIn body, etc.).",
+      "  accounts: per-account health (isActive, platformStatus, intentionalDisconnectAt).",
+      "",
+      "Use the same accountIds + mediaItems shape as aa_create_post. The four optional",
+      "fields below match the typed *Options blockers (YouTube/Reddit/Threads).",
+    ].join("\n"),
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        content: { type: "string", description: "Post text/caption" },
+        accountIds: { type: "array", items: { type: "string" }, description: "Account IDs to validate against" },
+        mediaItems: {
+          type: "array",
+          description: "Media attachments — same shape as aa_create_post. width/height let aspect-ratio gates run without a probe fetch.",
+          items: {
+            type: "object",
+            properties: {
+              type: { type: "string", enum: ["image", "video"] },
+              url: { type: "string" },
+              width: { type: "number" },
+              height: { type: "number" },
+              durationSec: { type: "number" },
+              sizeBytes: { type: "number" },
+            },
+            required: ["type", "url"],
+          },
+        },
+        youtubeTitle: { type: "string", description: "Required-on-create field — pre-flight checks it's set + within length" },
+        redditSubreddit: { type: "string", description: "Required-on-create field" },
+        redditTitle: { type: "string", description: "Required-on-create field" },
+        threadsTopicTag: { type: "string", description: "Optional — pre-flight checks the format constraints" },
+      },
+      required: ["accountIds"],
+    },
+  },
   {
     name: "aa_create_post",
     description: [
@@ -295,23 +363,47 @@ export const TOOLS = [
   },
   {
     name: "aa_list_posts",
-    description:
-      "List the user's posts with optional filters. " +
-      "Each post has a platforms[] array (one entry per platform leg). " +
-      "When referring to which account a post belongs to, use platforms[i].platformSpecificData.__usernameSnapshot (snapshot at schedule-time, always safe) — " +
-      "do NOT trust accountId.username or accountId.displayName from a populated accountId object (can be substituted when the original account was deleted upstream). " +
+    description: [
+      "List the user's posts with optional filters. Each post has a platforms[] array — one entry per platform leg.",
+      "",
+      "═══ PER-LEG STATUS (post-Phase-6e) ═══",
+      "Each platforms[i] now carries its own status, publishedAt, errorMessage, and platformPostId — derived from the per-leg",
+      "delivery row (aa_post_deliveries), not the legacy posts_mirror. The post-level status is rolled up worst-status-wins:",
+      "  - all legs published → 'published'",
+      "  - any leg failed → 'failed'",
+      "  - any leg posting → 'posting'",
+      "  - otherwise → 'scheduled' / 'draft'",
+      "Iterate platforms[] to see the actual per-platform outcome — and platforms[i].errorMessage when a leg failed.",
+      "",
+      "═══ ATTRIBUTION (cross-tenant safety) ═══",
+      "When referring to which account a post belongs to, use platforms[i].platformSpecificData.__usernameSnapshot",
+      "(snapshot at schedule-time, always safe) — do NOT trust accountId.username or accountId.displayName from a populated",
+      "accountId object (can be substituted when the original account was deleted upstream).",
       "If accountId._id isn't in aa_list_accounts for this user, treat the binding as unknown.",
+    ].join("\n"),
     inputSchema: {
       type: "object" as const,
       properties: {
-        status: { type: "string", enum: ["scheduled", "published", "failed"], description: "Filter by status" },
+        status: { type: "string", enum: ["scheduled", "published", "failed"], description: "Filter by post-level rollup status" },
         limit: { type: "number", description: "Max results (default 20)" },
       },
     },
   },
   {
     name: "aa_update_post",
-    description: "Update a scheduled post's content or time.",
+    description: [
+      "Update a post's content or time. Behavior depends on whether each leg has published yet:",
+      "",
+      "─ SCHEDULED legs: caption + scheduledAt are freely editable.",
+      "",
+      "─ PUBLISHED legs: edit-after-publish capability varies by platform.",
+      "  Caption-editable: Instagram (caption + alt text), Facebook, LinkedIn, Pinterest (title/desc/link),",
+      "                    Reddit body (NOT title — Reddit policy), YouTube (title + description), Twitter Premium (within 30 min).",
+      "  Locked: TikTok, Threads, Bluesky — delete + repost to change.",
+      "  Media is locked everywhere once published.",
+      "",
+      "If you send a caption update for a locked leg, Zernio's API will reject — the dashboard surfaces the error in last_error.",
+    ].join("\n"),
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -383,7 +475,14 @@ export const TOOLS = [
   },
   {
     name: "aa_save_campaign_plan",
-    description: "Save a content plan to a campaign. The plan is an array of day objects with captions per platform, image prompts, and optional video/music prompts. This creates the campaign posts.",
+    description: [
+      "Save a content plan to a campaign. The plan is an array of day objects with captions per platform, image/video/music prompts.",
+      "Creates one campaign_posts row per day.",
+      "",
+      "Carousel days: pass slideConfigs (or imagePrompts as a back-compat fallback) to drive per-slide generation.",
+      "Video days: videoDuration controls clip length; >10s chains multiple FFmpeg-concat'd clips.",
+      "Per-day provider override: providerOverrides scopes the generator picker to one day (e.g., rescue a Magnific failure with fal.ai without changing the campaign default).",
+    ].join("\n"),
     inputSchema: {
       type: "object" as const,
       properties: {
@@ -397,12 +496,57 @@ export const TOOLS = [
               theme: { type: "string" },
               captions: { type: "object", description: "{ platform: caption } per platform" },
               imagePrompt: { type: "string", description: "Image generation prompt" },
-              imagePrompts: { type: "array", items: { type: "string" }, description: "For carousels: per-slide prompts" },
-              videoPrompt: { type: "string", description: "For video: camera motion description" },
-              musicPrompt: { type: "string", description: "For video: music mood description" },
+              imagePrompts: { type: "array", items: { type: "string" }, description: "Carousel back-compat: per-slide prompts (prefer slideConfigs)" },
+              slideConfigs: {
+                type: "array",
+                description: "Per-slide config for carousels. Each slide can have its own prompt + text overlays.",
+                items: {
+                  type: "object",
+                  properties: {
+                    prompt: { type: "string" },
+                    overlay: {
+                      type: "object",
+                      properties: {
+                        text: { type: "string" },
+                        position: { type: "string", enum: ["top", "center", "bottom"] },
+                        style: { type: "string", description: "FFmpeg drawtext style preset" },
+                      },
+                    },
+                  },
+                },
+              },
+              videoPrompt: { type: "string", description: "Video: camera motion / scene description" },
+              musicPrompt: { type: "string", description: "Video: music mood description" },
               videoDuration: { type: "number", enum: [5, 10, 20, 30, 60], description: "Video length in seconds. >10s chains multiple clips via FFmpeg" },
               includeMusic: { type: "boolean", description: "Include AI-generated music (default true)" },
               contentType: { type: "string", enum: ["image", "carousel", "video"] },
+              providerOverrides: {
+                type: "object",
+                description: "Per-day generator override (wins over campaign + pen-name defaults). Shape: { image?: { provider, model }, video?: {...}, music?: {...} }",
+                properties: {
+                  image: {
+                    type: "object",
+                    properties: {
+                      provider: { type: "string", enum: ["magnific", "fal", "gemini"] },
+                      model: { type: "string" },
+                    },
+                  },
+                  video: {
+                    type: "object",
+                    properties: {
+                      provider: { type: "string", enum: ["magnific", "fal"] },
+                      model: { type: "string" },
+                    },
+                  },
+                  music: {
+                    type: "object",
+                    properties: {
+                      provider: { type: "string", enum: ["magnific", "fal"] },
+                      model: { type: "string" },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -412,7 +556,18 @@ export const TOOLS = [
   },
   {
     name: "aa_generate_media",
-    description: "Start generating images/videos for a campaign using FreePik AI. Returns immediately — poll aa_check_media_status for progress.",
+    description: [
+      "Start generating images/videos/music for a campaign. Returns immediately — poll aa_check_media_status for progress.",
+      "",
+      "Provider routing (resolved per task type at job start):",
+      "  - Per-day override on campaign_posts.provider_overrides → wins for that day",
+      "  - Per-campaign override on campaigns.{image,video,music}_provider → next priority",
+      "  - Pen-name default on user_ai_settings.{image,video,music}_provider → fallback",
+      "Providers: Magnific (default), fal.ai, Google Gemini (image-only).",
+      "",
+      "Per-post failures are captured into campaign_posts.last_error so the dashboard's DayCard surfaces specific reasons",
+      "(e.g., 'Image 1080x1350: fal.ai API error 401: Invalid API key'). Failed days can be re-run individually.",
+    ].join("\n"),
     inputSchema: {
       type: "object" as const,
       properties: { campaignId: { type: "string" } },
@@ -421,7 +576,8 @@ export const TOOLS = [
   },
   {
     name: "aa_check_media_status",
-    description: "Check media generation progress for a campaign.",
+    description:
+      "Check media generation progress for a campaign. Returns per-post status + last_error so callers can render granular progress and surface per-day failure reasons.",
     inputSchema: {
       type: "object" as const,
       properties: { campaignId: { type: "string" } },
@@ -501,6 +657,9 @@ export const TOOLS = [
 
 export async function handleTool(name: string, args: Record<string, unknown>): Promise<unknown> {
   switch (name) {
+    case "aa_list_profiles":
+      return apiCall("/profiles");
+
     case "aa_list_accounts":
       return apiCall("/accounts", { params: args.platform ? { platform: args.platform as string } : undefined });
 
@@ -509,6 +668,19 @@ export async function handleTool(name: string, args: Record<string, unknown>): P
 
     case "aa_queue_preview":
       return apiCall("/queue/preview", { params: args.count ? { count: String(args.count) } : undefined });
+
+    case "aa_list_queues":
+      return apiCall("/queue", {
+        params: Object.fromEntries(
+          Object.entries({
+            queueId: args.queueId,
+            all: args.all === true ? "true" : undefined,
+          }).filter(([, v]) => v != null) as [string, string][]
+        ),
+      });
+
+    case "aa_preflight_post":
+      return apiCall("/posts/preflight", { method: "POST", body: args });
 
     case "aa_create_post":
       return apiCall("/posts", { method: "POST", body: args });

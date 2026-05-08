@@ -13,7 +13,7 @@ This plugin connects Claude to your [Author Automations Social](https://authorau
 
 ### The Hybrid AI Model
 
-Unlike typical integrations where a server-side AI writes your content, this plugin lets **Claude write your captions directly**. Claude reads your brand guides, understands your current project context, and crafts platform-specific captions that match your voice. Media generation (images, videos, music) happens server-side via FreePik AI.
+Unlike typical integrations where a server-side AI writes your content, this plugin lets **Claude write your captions directly**. Claude reads your brand guides, understands your current project context, and crafts platform-specific captions that match your voice. Media generation (images, videos, music) happens server-side via your chosen AI provider (Magnific, fal.ai, or Google Gemini) — set per pen name in Settings → AI, with per-campaign and per-day overrides.
 
 ## Install
 
@@ -84,27 +84,31 @@ Claude will:
 1. Ask about your objective and platforms
 2. Read your brand/prose/social media guides
 3. Write day-by-day captions tailored to each platform
-4. Generate images and video via FreePik AI (2–3 min per video)
+4. Generate images and video via your chosen provider (Magnific / fal.ai / Gemini) — 2–3 min per video
 5. Schedule everything to your content calendar or queue
 
 ### Available Tools
 
 | Tool | Description |
 |------|-------------|
+| `aa_list_profiles` | List the pen-name profiles this credential can address (use first to know your X-Profile-Id options) |
 | `aa_list_accounts` | See your connected social accounts |
-| `aa_create_post` | Create and schedule a post |
-| `aa_list_posts` | View your scheduled/published posts |
-| `aa_update_post` | Edit a scheduled post |
-| `aa_delete_post` | Remove a post |
-| `aa_upload_media` | Get a presigned URL for media upload |
 | `aa_get_guides` | Read your content guides (brand, prose, social) |
 | `aa_queue_preview` | See upcoming queue slots |
+| `aa_list_queues` | List queue definitions (per-platform queue support — ATH-207) |
+| `aa_preflight_post` | Validate a draft post WITHOUT scheduling — surfaces the same blockers/warnings as create, with zero side effects |
+| `aa_create_post` | Create and schedule a post |
+| `aa_list_posts` | View your scheduled/published posts (per-leg status, errorMessage, publishedAt — Phase 6e) |
+| `aa_update_post` | Edit a post — per-leg edit-after-publish for platforms whose API supports it (Phase 6b) |
+| `aa_delete_post` | Remove a post |
+| `aa_upload_media` | Get a presigned URL for media upload |
 | `aa_create_campaign` | Start a new campaign |
-| `aa_save_campaign_plan` | Save a content plan to a campaign |
-| `aa_generate_media` | Generate images/videos for a campaign |
-| `aa_check_media_status` | Check media generation progress |
+| `aa_save_campaign_plan` | Save a content plan to a campaign — supports slideConfigs, providerOverrides per-day |
+| `aa_generate_media` | Generate images/videos/music — routes per task type to Magnific / fal.ai / Gemini |
+| `aa_check_media_status` | Check media generation progress (per-post last_error surfaced) |
 | `aa_schedule_campaign` | Schedule all campaign posts |
 | `aa_list_campaigns` | View your campaigns |
+| `aa_shorten_url` | Shorten URLs through your branded domain (Switchy) |
 
 ## What's new — version comparison
 
@@ -150,6 +154,7 @@ Cross-post my launch announcement to r/Fantasy and r/SelfPublishing.
 
 | Version | What changed |
 |---|---|
+| **2.2.0** | New tools: `aa_list_profiles` (pen-name picker), `aa_preflight_post` (validate without scheduling), `aa_list_queues` (per-platform queue defs). `aa_list_posts` now reports per-leg status + per-leg `errorMessage` + `publishedAt` (Phase 6e — `aa_post_deliveries` is the source of truth). `aa_update_post` now supports per-leg edit-after-publish where the platform's API allows it (Instagram caption, LinkedIn caption, Pinterest title/desc/link, etc.). Media generation is multi-provider (Magnific / fal.ai / Gemini) with per-day overrides via `aa_save_campaign_plan.providerOverrides` |
 | **2.1.0** | Skills expansion: new `instagram-reels`, `threads-post`, `youtube-video`, `reddit-post` specialists. Updated `social-post` as orchestrator with platform routing |
 | **2.0.0** | **No Node.js required.** MCP server ships as a precompiled per-platform binary (~60MB, downloaded on first session) instead of a JS bundle invoked via `node`. Closes the silent-install-failure conversion blocker for non-technical authors |
 | 1.6.0 | Whitelabel cleanup. Single self-contained JS bundle removed the runtime `npm install` |

@@ -113,7 +113,9 @@ A campaign can mix Reels, Stories, and feed posts across days. When a day's plan
 - **YouTube videos / Shorts** → `youtube-video` skill. Title is required per video (1–100 chars, separate from caption). For AI-generated video days, set `containsSyntheticMedia: true`.
 - **Reddit cross-posts** → `reddit-post` skill. Each subreddit has its own flair conventions; Reddit days in a campaign typically post once per subreddit, not as a mass blast.
 
-For a Reel day specifically: when planning the imagePrompt for a Reel, also plan the **cover image** prompt — the cover is what shows in the user's feed before the video plays, so it needs to stop the scroll. Generate the cover via Freepik and pass the public URL as `instagramOptions.coverImage` when scheduling.
+For a Reel day specifically: when planning the imagePrompt for a Reel, also plan the **cover image** prompt — the cover is what shows in the user's feed before the video plays, so it needs to stop the scroll. Generate the cover through `aa_generate_media` (which routes to whichever image provider the pen name has set — Magnific / fal.ai / Gemini) and pass the public URL as `instagramOptions.coverImage` when scheduling.
+
+**Per-day provider override**: if a campaign has one or two image-heavy days where you want a higher-quality model than the pen-name default, set `providerOverrides` on those days when calling `aa_save_campaign_plan`. The override wins over the campaign default which wins over the pen-name default. Useful when a campaign mostly uses fal.ai/SDXL for cost but the cover-reveal day deserves Gemini's `gemini-3-pro-image-preview`.
 
 ## Campaign Arc Strategies
 For a book launch:

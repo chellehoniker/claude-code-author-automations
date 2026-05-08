@@ -35,6 +35,8 @@ Call `aa_get_guides` to get their brand voice, prose style, and social media str
 ### 3. Get Their Accounts
 Call `aa_list_accounts` to see which platforms they have connected.
 
+If the user has multiple pen names and hasn't told you which one they're posting under, call `aa_list_profiles` first and ask. Every other call is scoped by `X-Profile-Id` (handled automatically by the plugin's MCP client) — picking the wrong pen name posts to the wrong identity.
+
 ### 4. Write Platform-Specific Captions
 Write a DIFFERENT caption for each platform. Follow these rules:
 - **Instagram**: Engaging hook, storytelling, 5-10 relevant hashtags, call to action. Up to 2,200 chars.
@@ -64,7 +66,7 @@ Show all platform captions to the user. Ask if they want changes.
 If the post needs an image:
 - Ask if they have an image to upload
 - If uploading: use `aa_upload_media` to get a presigned URL, then PUT the file bytes to `uploadUrl` and use the `publicUrl` in the post
-- If they want AI-generated: route them through the campaign-style image flow (Freepik via `aa_generate_media` on a one-day campaign), then use the resulting `publicUrl` here
+- If they want AI-generated: route them through the campaign-style image flow (multi-provider via `aa_generate_media` on a one-day campaign — Magnific / fal.ai / Gemini per the user's pen-name default), then use the resulting `publicUrl` here
 - Pass `width` and `height` on each `mediaItem` when known — the server uses this to pre-flight Instagram aspect ratios without an extra fetch
 
 ### 8. Upload egress troubleshooting
@@ -74,16 +76,27 @@ The `aa_upload_media` step PUTs file bytes directly to the storage CDN (`*.r2.cl
 If the user reports the upload "hangs" or "doesn't work," tell them:
 > "The upload step needs network egress to the storage CDN. In Claude Cowork: **Settings → Capabilities → Allow Network Egress** should be ON, set to 'All Domains' (R2 uses subdomains, so a single-domain allowlist won't catch it)."
 
-### 9. Schedule or Publish
+### 9. Pre-flight (optional but recommended for multi-account posts)
+
+If the post fans out to 3+ accounts OR involves a Reel / Story / Reddit / YouTube post (where required fields are easy to miss), call `aa_preflight_post` first with the same accountIds + mediaItems + the relevant typed fields (`youtubeTitle`, `redditSubreddit`, `redditTitle`, `threadsTopicTag`).
+
+Pre-flight returns `{ ok, blockers[], warnings[], accounts[] }` without scheduling anything:
+- **blockers** — surface and ask the user how to fix BEFORE calling `aa_create_post`. Don't try to push past a blocker by guessing — show the user what the gate is.
+- **warnings** — same shape as the post-create warnings (see step 11). Mention briefly; not blocking.
+- **accounts[i].health** — flags accounts with `intentionalDisconnectAt` set (user disconnected the platform themselves). If any are disconnected, ask the user whether to drop those from `accountIds` before creating.
+
+Skipping pre-flight is fine for 1-account simple text posts where there's nothing to validate.
+
+### 10. Schedule or Publish
 
 Ask when to post:
 - **Now**: Set `publishNow: true`
 - **Specific time**: Set `scheduledAt` with the ISO datetime and their timezone
-- **Queue**: Suggest the web dashboard's queue feature for recurring schedules
+- **Queue**: Suggest the web dashboard's queue feature for recurring schedules. The dashboard supports per-platform queue decoration — one queue can fan out per-platform (e.g. an [instagram, tiktok] queue populates the next slot on each platform independently) — so authors don't have to maintain separate queues per network.
 
 Call `aa_create_post` with the content, accountIds, scheduling options, and any platform `*Options` blocks the specialist skills wrote.
 
-### 10. Surface preflight warnings
+### 11. Surface preflight warnings
 
 If the `aa_create_post` response includes a non-empty `warnings[]` array, tell the user about each one in plain language BEFORE the confirmation. Each warning has a `title` (what's the issue) and a `fix` (what to do about it) — the server already wrote both in user-facing prose, so quote them or paraphrase lightly.
 
@@ -99,7 +112,7 @@ Example phrasing:
 
 If there are no warnings, skip this step.
 
-### 11. Confirm
+### 12. Confirm
 Show what was created and when it will post.
 
 ## Important Notes
