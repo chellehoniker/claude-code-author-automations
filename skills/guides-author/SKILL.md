@@ -95,60 +95,56 @@ Let the user decide whether the change ripples.
 
 A persona is "born" by writing initial guide content under a never-before-seen `tag`. There's no separate `aa_create_persona` tool — `aa_update_guide` with a new tag does the create.
 
-### Walking the user through a fresh persona
+### Why we still write all four guides
 
-This takes a while. Suggest doing it in stages — don't try to fill all four guides in one chat unless the user explicitly wants to.
+The four guides feed different prompt paths in the dashboard's AI generation. Skipping any of them — even when content overlaps — leaves blank fields the campaign generator fills with generic defaults. So we DO populate all four. The trick is to ask each underlying question ONCE and use the answer to populate every guide section it informs.
 
-**Stage 1 — name + brand basics** (`brand_guide`)
-- Persona tag (the name they'll address it by — e.g., "Spicy Romance Series")
-- Genre / sub-niche
-- Target audience (be specific — age range, reading habits, what they avoid)
-- Unique differentiator (what sets this voice apart)
-- Tagline / slogan (one short line)
-- Brand mission (1–2 paragraphs — purpose, perspective, promise)
-- Personality keywords (4–6 single words)
-- Voice & tone (1–2 paragraphs of HOW the voice sounds)
-- Bio (third-person, 1–2 paragraphs — how this persona presents to readers)
+### The de-duped question flow — facets, not guides
 
-Compose into a brand_guide text matching the existing brand guide structure (see question library). Show, confirm, save.
+The question library at the bottom is organized by **facet** (the underlying thing you're asking about), not by guide. Each facet maps to one or more guide sections; you ask the question once and compile the answer into every section it lands in. The mapping table:
 
-**Stage 2 — prose guide** (only if persona writes fiction)
-- Narrative tone (1 paragraph + a CORRECT/INCORRECT example pair)
-- Sentence rhythm + paragraph structure preferences
-- Dialogue style (Southern? Direct? Sarcasm? Per-character voices?)
-- Description priorities (what sensory details matter)
-- Pacing approach
-- Character voice differentiation (per-character speech patterns)
-- Tension / conflict conventions (cozy = no graphic violence, etc.)
-- Romance conventions (heat level, forbidden phrases)
-- Word choice (preferred + forbidden vocabulary)
-- Punctuation quirks (em dashes? Ellipses?)
-- Genre conventions (cozy mystery requirements, paranormal additions, etc.)
-- Scene examples (1–3 short examples in the persona's voice)
+| Facet | Asked once → populates |
+|---|---|
+| **Identity** (genre, niche, bio) | brand_guide.GENRE + brand_guide.AUTHOR_BIO |
+| **Audience** (segments, ages, habits, what they buy + avoid) | brand_guide.TARGET_AUDIENCE + social_media_guide.SOCIAL_MEDIA_TARGET_AUDIENCE |
+| **Voice** (keywords, how it sounds, formality) | brand_guide.PERSONALITY_KEYWORDS + brand_guide.VOICE_AND_TONE + copywriting_guide.VOICE_AND_POV + copywriting_guide.FORMALITY + prose_guide.NARRATIVE_TONE |
+| **Off-limits** (forbidden vocabulary categories, taboo topics) | prose_guide.FORBIDDEN_VOCABULARY + copywriting_guide.WORDS_AND_PHRASES_I_AVOID + social_media_guide.TOPICS_TO_AVOID |
+| **Differentiator** (the one unique thing) | brand_guide.UNIQUE_DIFFERENTIATOR |
+| **Tagline + mission** | brand_guide.TAGLINE + brand_guide.BRAND_MISSION |
+| **Sample writing** (1 paragraph in-voice + 1 reader email reply) | prose_guide.SCENE_EXAMPLES (the in-voice paragraph, if fiction) + copywriting_guide.WRITING_SAMPLES (the email reply) |
+| **Prose-specific** (dialogue style, description priorities, pacing, romance heat, genre conventions) | prose_guide.* sections |
+| **Copywriting-specific** (POV by content type, engagement style, CTA examples) | copywriting_guide.* sections |
+| **Social-specific** (platforms, content pillars, hashtag sets, emoji style) | social_media_guide.* sections |
 
-**Stage 3 — copywriting guide**
-- Voice & POV by content type (newsletters first-person? Press releases third-person?)
-- Formality level (casual / casual-but-organized / professional / formal)
-- Engagement style (newsletter format, email replies, social posts)
-- Personal engagement level (how hands-on with reader DMs)
-- Language & style (preferred phrases, forbidden phrases)
-- Humor style
-- Punctuation quirks
-- Storytelling approach (1 paragraph)
-- CTA style (5 sample CTAs)
-- Writing samples (1 email reply, 1 newsletter opening, 1 announcement)
+When you compile, be transparent. After each shared facet, briefly tell the user where the answer's going — e.g., *"Got it — these voice keywords land in your brand guide AND inform the voice sections of your copywriting and prose guides."* That way they understand why one answer covers three places.
 
-**Stage 4 — social media guide**
-- Primary platforms + per-platform strategy
-- Posting cadence per platform
-- Content pillars (5 sets of ~5 themes each)
-- Audience targeting (3–4 specific audience segments)
-- Hashtag sets (~9 per category)
-- Per-platform hashtag strategy
-- Emoji style
-- Topics to avoid
+### Stages — work the facets in this order
 
-Each stage compiles into the right guide field. Save after each stage so the user can pause and resume.
+This takes a while; do it in stages and save after each so the user can pause and resume.
+
+**Stage 1 — Foundation** (covers identity + audience + voice + differentiator + tagline + mission)
+Walk facets 1–6. By end of stage, you can compile + save the brand_guide entirely AND prefill the voice sections of copywriting_guide and prose_guide. Save brand_guide via `aa_update_guide({tag, brand_guide: "<full text>"})`.
+
+**Stage 2 — Off-limits** (one focused question)
+Walk facet 4 (forbidden vocabulary categories + topics to avoid). Compile and stash these in your context — they'll be merged into prose, copywriting, and social guides at the end of each respective stage.
+
+**Stage 3 — Sample writing** (one focused conversation)
+Walk facet 7. Two artifacts: a 1-paragraph in-voice prose example (skip if persona is non-fiction-only), and a 1–2-paragraph reader email reply in the persona's voice. Stash for later.
+
+**Stage 4 — Prose deepening** (only if fiction persona)
+Walk facets 8 (prose-specific). Compile prose_guide using the voice text from Stage 1 + off-limits from Stage 2 + scene examples from Stage 3 + the prose-specific answers. Save via `aa_update_guide({tag, prose_guide: "<full text>"})`.
+
+**Stage 5 — Copywriting deepening**
+Walk facets 9 (copywriting-specific). Compile copywriting_guide using Stage 1 voice + Stage 2 off-limits + Stage 3 email reply + the copywriting-specific answers. Save.
+
+**Stage 6 — Social deepening**
+Walk facets 10 (social-specific). Compile social_media_guide using Stage 1 audience + Stage 2 off-limits + the social-specific answers. Save.
+
+After Stage 1, the user has a usable persona (the brand_guide is enough for AI to write campaigns; the other guides refine quality). After all 6, the persona is fully populated. The user can stop after any stage and come back later — Stage N just needs Stage 1 + Stage 2 in your context.
+
+### Skipping stages for a non-fiction persona
+
+If the persona is non-fiction only (coaching, business, nonfiction author), skip Stage 4. The prose_guide field can stay NULL — the AI generator handles missing prose guides gracefully (it falls back to the copywriting voice for any fiction-shaped task that comes up, which for non-fiction personas is rare).
 
 ## Renaming a persona
 
@@ -170,44 +166,74 @@ The server **refuses to delete the default persona** — every fallback lookup r
 
 For non-default personas, delete works directly. Confirm with the user before calling — this is destructive, and recreating four guide-texts from memory is painful.
 
-## Question library — what to ask for each section
+## Question library — facets, not guides
 
-Use these as conversational prompts. Don't dump them as a literal questionnaire — weave them into the conversation as the user works through a section.
+Each facet is asked ONCE. The mapping table above shows which guide sections each answer populates — be transparent with the user as you go. Don't dump these as a literal questionnaire; weave them into the conversation.
 
-### Brand guide questions
+### Facet 1: Identity (genre, niche, bio)
 
-- **Genre**: "What genre and sub-niche does this persona write in? Be specific — 'cozy mystery' is broader than 'gulf coast paranormal cozy mystery with witches and shapeshifters'."
-- **Target audience**: "Two or three reader segments — for each, give me their age range, how many books they read a month, where they buy them, what they love, and what they avoid."
-- **Differentiator**: "What's the one thing your books do that nobody else's do? A specific magic system rule, a setting hook, a relationship dynamic — the thing readers can't get from a similar-shelf book."
-- **Tagline**: "One short line that captures the vibe — sub-15 words."
-- **Mission**: "Two short paragraphs: who this persona is, what they bring to readers, and what they promise."
-- **Personality keywords**: "Four to six single words that describe the voice — adjectives like 'whimsical, salt-kissed, enchanting, communal'."
-- **Voice & tone**: "One paragraph: how does this voice SOUND to readers? Use a metaphor or comparison if it helps — 'like a trusted tour guide who knows where the secrets are'."
+- **Genre / niche**: "What genre and sub-niche does this persona write in? Be specific — 'cozy mystery' is broader than 'gulf coast paranormal cozy mystery with witches and shapeshifters'."
 - **Bio**: "Two short third-person paragraphs that you'd put on Amazon's author page or the back of a book."
 
-### Prose guide questions
+### Facet 2: Audience
 
-- **Narrative tone**: "One sentence describing the voice (e.g., 'whimsical, warm, and conspiratorial'), then 1–2 sentences explaining what that means in practice. Then give me an example of the right tone, and an example of what's WRONG (over-explained, too literal, dialect overdone, etc.)."
-- **Dialogue style**: "Southern Texas? Direct? Sarcastic? Do supernatural species in your world have distinct speech patterns? Give me 5 phrases your characters would use, and 5 they wouldn't."
-- **Description**: "What sensory details matter most in your scenes? (e.g., 'salt air, golden hour light, weathered wood'.) Are there specific regional references that have to land authentically?"
+- **Reader segments**: "Two or three reader segments — for each, give me their age range, how many books they read a month, where they buy them (Kindle Unlimited, Amazon print, Barnes & Noble, indie shops), what they love, what they avoid, and what online spaces they hang out in (Goodreads groups, Facebook book clubs, BookTok creators they follow)."
+
+This single answer is rich enough to compile into both `brand_guide.TARGET_AUDIENCE` and `social_media_guide.SOCIAL_MEDIA_TARGET_AUDIENCE` — the social-media version foregrounds the platforms the segment uses, the brand version foregrounds reading habits + dealbreakers.
+
+### Facet 3: Voice
+
+- **Personality keywords**: "Four to six single words that describe the voice — adjectives like 'whimsical, salt-kissed, enchanting, communal'."
+- **How it sounds**: "One paragraph: how does this voice SOUND to readers? Use a metaphor or comparison if it helps — 'like a trusted tour guide who knows where the secrets are'."
+- **Formality level**: "On a 1–4 scale (1 = chatty/casual, 4 = formal), where does this persona sit? It's OK to give different numbers for newsletters vs press releases vs reader-DM replies — different content types, different formality."
+
+These three answers populate FIVE guide sections: brand's PERSONALITY_KEYWORDS + VOICE_AND_TONE; copywriting's VOICE_AND_POV + FORMALITY; prose's NARRATIVE_TONE. After capturing these, tell the user: *"Got it — voice work covered. These answers land in your brand guide AND inform the voice sections of your copywriting and prose guides — no need to repeat any of this later."*
+
+### Facet 4: Off-limits
+
+- **Forbidden vocabulary categories**: "List five word/phrase categories that would BREAK immersion or violate the brand if they showed up. For example: sci-fi tech terms (cyber warfare, neural implants), grimdark fantasy (dark lord, sword of destiny), graphic violence (arterial spray, eviscerated), explicit romance (heaving bosom, throbbing desire), or anything else off-brand. Be specific so the AI knows what to avoid."
+- **Social topics to avoid**: "On social specifically, what topics steer clear? Politics, religion, real-crime details, competitor drama, personal medical, family problems — categories the persona shouldn't post about."
+
+These two answers populate three sections: prose's FORBIDDEN_VOCABULARY, copywriting's WORDS_AND_PHRASES_I_AVOID, social's TOPICS_TO_AVOID.
+
+### Facet 5: Differentiator
+
+- **The unique thing**: "What's the one thing your books do that nobody else's do? A specific magic system rule, a setting hook, a relationship dynamic — the thing readers can't get from a similar-shelf book."
+
+### Facet 6: Tagline + mission
+
+- **Tagline**: "One short line that captures the vibe — sub-15 words."
+- **Mission**: "Two short paragraphs: who this persona is, what they bring to readers, and what they promise."
+
+### Facet 7: Sample writing
+
+- **In-voice prose paragraph** (skip if non-fiction-only persona): "Write me ONE paragraph (~5–8 sentences) of fiction in this persona's voice. A scene fragment, an opening hook, a moment of dialogue — anything that demonstrates how the prose actually sounds. Don't summarize it; write it."
+- **Reader email reply**: "Write a 1–2 paragraph reply to a hypothetical fan email saying *'I loved your last book, the world feels so real.'* Reply in the persona's voice — that's the model for how she/he/they writes back to readers."
+
+### Facet 8: Prose-specific (only for fiction personas)
+
+- **Dialogue style**: "Southern Texas? Direct? Sarcastic? Do different supernatural species or character types in your world have distinct speech patterns? Give me 5 phrases your characters would use, and 5 they wouldn't."
+- **Description priorities**: "What sensory details matter most in your scenes? (e.g., 'salt air, golden hour light, weathered wood'.) Are there specific regional references that have to land authentically?"
 - **Pacing pattern**: "How does a scene flow in your books? Open with X, build through Y, climax at Z?"
-- **Word choice**: "List five word/phrase categories that would BREAK immersion if they appeared (e.g., 'sci-fi tech terms', 'grimdark fantasy phrases', 'graphic violence vocabulary')."
+- **Punctuation quirks**: "Em dashes? Ellipses? Italics? When and why?"
+- **Romance heat level**: "Closed door / fade-to-black, kissing only, on-page intimate, explicit? Any romance phrases that would feel WRONG in this world (e.g., bodice-ripper clichés in a literary romance)?"
+- **Genre conventions**: "What genre rules MUST hold? (Cozy mystery: no graphic violence, amateur sleuth, restored harmony. Paranormal: clear magic rules, masquerade, etc.)"
 
-### Copywriting guide questions
+### Facet 9: Copywriting-specific
 
-- **POV by content type**: "First or third person for newsletters? Emails? Press releases? Blog posts? Social? Be specific per format."
-- **Formality**: "On a 1–4 scale (1 = casual, 4 = formal), where do your reader emails sit? Newsletters? Press releases?"
-- **Engagement**: "Describe one or two recurring newsletter sections you'd love to run. What questions would you ask readers? How would you respond to a fan email?"
-- **CTAs**: "Give me 3–5 sample call-to-action lines in your voice. Promotional ('grab your copy') AND community ('what do you think?')."
+- **POV by content type**: "First or third person? Vary per format — newsletters, emails, press releases, blog posts, social. Be specific per format."
+- **Engagement style**: "Describe one or two recurring newsletter sections you'd love to run. What questions would you ask readers? How would you respond to a fan email?"
+- **Personal engagement level**: "How hands-on do you want to be with reader DMs? Reply personally to most? Have an assistant screen 90% and only flag the meaningful ones to you?"
+- **CTAs**: "Give me 3–5 sample call-to-action lines in your voice. Mix promotional ('grab your copy') with community ('what do you think?')."
 
-### Social media guide questions
+### Facet 10: Social-specific
 
-- **Platforms**: "Which platforms does this persona prioritize, and why? Match each to one or two demographics it reaches best."
-- **Content pillars**: "5 themes you'd post about. For each, give me 3–5 specific content ideas."
-- **Audience targeting**: "Three target segments with platforms they're active on, content types they engage with, and creators they follow."
-- **Hashtags**: "8–12 hashtags per platform, mixing broad (#CozyMystery) and niche (#GulfCoastWitches)."
+- **Primary platforms + strategy**: "Which 2–4 platforms does this persona prioritize, and what's the angle on each? Match each to one or two demographics it reaches best."
+- **Posting cadence**: "How often per platform — daily, 3x weekly, weekly?"
+- **Content pillars**: "5 content themes the persona posts about. For each, give 3–5 specific content ideas."
+- **Hashtag sets**: "8–12 hashtags per platform, mixing broad (#CozyMystery) and niche (#GulfCoastWitches). One set per platform; they don't need to overlap."
+- **Per-platform hashtag strategy**: "How many hashtags per post on each platform? Where to place them (caption vs first comment)?"
 - **Emoji style**: "Minimal? Heavy? Specific signature emojis? Tied to seasons or themes?"
-- **Topics to avoid**: "Five categories of content this persona steers clear of — graphic content, politics, controversy, personal medical, competitor drama, etc."
 
 ## Common mistakes to avoid
 

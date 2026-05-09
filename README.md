@@ -92,6 +92,10 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 
 ## What's new
 
+### v3.7.1 (2026-05-08)
+
+- `guides-author` skill: question library re-organized as **facets, not guides**. Each underlying question is asked ONCE and the answer is compiled into every guide section it informs (voice → 5 sections across 3 guides; off-limits → 3 sections; etc.). Skill is transparent about which guides each answer lands in. All four guides still get written — none of them are skipped — because the dashboard's AI generator reads each separately. The previous structure asked the same things multiple times across the 4-guide questionnaire; this is a clean dedup.
+
 ### v3.7.0 (2026-05-08)
 
 - **Queue CRUD via chat** — new `aa_create_queue`, `aa_update_queue`, `aa_delete_queue`, `aa_list_queues` tools and a `queues` skill. Queues now scope per-platform AND per-persona: a queue can serve only specific networks (`platforms[]`) and/or only one persona under the pen name (`tag` matching `aa_list_guide_sets`). The campaign scheduler prefers persona-scoped queues for that campaign's posts, falling back to shared queues.
