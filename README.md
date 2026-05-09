@@ -51,8 +51,8 @@ Claude reads your brand guides, writes platform-specific captions, generates med
 
 | Component | Triggers / Notes |
 |---|---|
-| **15 MCP tools** | `aa_list_accounts`, `aa_create_post`, `aa_create_campaign`, etc. — full reference at [/docs/api](https://authorautomations.social/docs/api) |
-| **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair) |
+| **22 MCP tools** | `aa_list_accounts`, `aa_create_post`, `aa_create_campaign`, queue CRUD (`aa_list_queues` / `aa_create_queue` / `aa_update_queue` / `aa_delete_queue`), guide CRUD (`aa_update_guide` / `aa_rename_guide_set` / `aa_delete_guide_set`), etc. — full reference at [/docs/api](https://authorautomations.social/docs/api) |
+| **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair), `queues` (per-platform + per-persona scheduling), `guides-author` (chat-edit personas + content guides) |
 | **Slash commands** | `/aa-post <topic>`, `/aa-campaign <objective>` |
 
 The skills make Claude fluent in platform-specific options. Saying "schedule 8 trial reels" auto-routes through the `instagram-reels` skill which knows the right `instagramOptions.trialParams` shape.
@@ -91,6 +91,12 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 - Bugs / feature requests: [open an issue](https://github.com/chellehoniker/claude-code-author-automations/issues)
 
 ## What's new
+
+### v3.7.0 (2026-05-08)
+
+- **Queue CRUD via chat** — new `aa_create_queue`, `aa_update_queue`, `aa_delete_queue`, `aa_list_queues` tools and a `queues` skill. Queues now scope per-platform AND per-persona: a queue can serve only specific networks (`platforms[]`) and/or only one persona under the pen name (`tag` matching `aa_list_guide_sets`). The campaign scheduler prefers persona-scoped queues for that campaign's posts, falling back to shared queues.
+- **Guides + personas chat-edit** — new `aa_update_guide`, `aa_rename_guide_set`, `aa_delete_guide_set` tools and a `guides-author` skill that walks the user through editing existing guides ("show me the diff before applying") and creating new personas in stages (brand → prose → copywriting → social media). The skill knows the question library used by the dashboard's guide-generation flow so it asks the same things in the same order.
+- Migration 044 adds `persona_tag` to `aa_queue_platforms` (NULL = shared, non-NULL = persona-scoped).
 
 ### v3.6.0 (2026-05-08)
 
