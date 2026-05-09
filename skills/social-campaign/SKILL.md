@@ -59,9 +59,14 @@ Create the full plan yourself. For each day, write:
 - **theme**: Brief description of the day's content angle
 - **captions**: A UNIQUE caption for EACH platform (see platform rules below)
 - **imagePrompt**: Detailed description for AI image generation
-- For carousels: **imagePrompts** array (3-5 slide descriptions telling a visual story)
-- For videos: **videoPrompt** (camera motion) + **musicPrompt** (audio mood)
+- For carousels: **slideConfigs** (preferred) — array of `{ prompt, overlay? }` per slide. Each slide can carry its own short text overlay (`overlay.text`, `overlay.position` = `top|center|bottom`, `overlay.style` for an FFmpeg drawtext preset). Plan 3–10 slides telling a visual story; the dashboard's slide-count picker drives `scene_count` on the campaign.
+  - Back-compat: `imagePrompts` (string array) still works — the server pads/trims to the requested slide count, but you lose per-slide overlays. Prefer `slideConfigs`.
+  - Carousel strategy: by default each platform gets the full slide stack. For `single_repeated` campaigns (one image looped across days as a brand bumper), set the day's `contentType: "image"` and use the same `imagePrompt` — don't fake it with a one-slide carousel.
+- For videos: **videoPrompt** (camera motion) + **musicPrompt** (audio mood) + **videoDuration** (5/10/20/30/60 s; >10s chains multiple FFmpeg-concat'd clips). Music caps at 30s per clip and FFmpeg loops it under longer videos automatically.
 - **contentType**: "image", "carousel", or "video"
+- **providerOverrides** (optional): per-day generator override shaped `{ image?: { provider, model }, video?: {...}, music?: {...} }`. Wins over the campaign-level + pen-name defaults. Use when one or two days deserve a different model — e.g., default to fal.ai/SDXL for cost but use Gemini's `gemini-3-pro-image-preview` for the cover-reveal day.
+
+If the user has their own image/video for a particular day, skip the AI prompts for that day and have them upload via `aa_upload_media`; pass the resulting `publicUrl` into the day's plan. The review screen has an "Upload my own" affordance for this.
 
 Build narrative momentum across the days. Don't repeat themes. Each day should feel fresh but connected to the campaign arc.
 
@@ -82,14 +87,28 @@ Call `aa_generate_media` with the campaignId.
 Poll `aa_check_media_status` every 30 seconds until complete.
 Report progress: "4 of 7 images generated..."
 
+**Multi-provider routing.** The server resolves which provider to use per task type at job start, in this priority order:
+1. The day's `providerOverrides` (set in Step 4) wins for that day.
+2. The campaign's `image_provider` / `video_provider` / `music_provider` columns win next.
+3. The pen name's defaults from Settings → AI win last.
+
+Available providers: **Magnific** (default), **fal.ai** (image/video/music — broad model catalog including SDXL, Flux, Kling, Seedance, DiffRhythm), **Google Gemini** (image only — Nano Banana, gemini-3-pro-image-preview).
+
 For video posts, the server automatically:
-1. Generates a still image from the imagePrompt
-2. Generates video from the still using Kling AI (image-to-video)
-3. Generates AI music from the musicPrompt
+1. Generates a still image from the imagePrompt via the resolved image provider
+2. Generates video from the still via the resolved video provider (image-to-video)
+3. Generates AI music from the musicPrompt via the resolved music provider
 4. **Composites the video and music together** using FFmpeg into a single MP4 file
 5. Uploads the final composite to media storage
 
 The user will see the complete video with music in the finalize/review step. Videos take 2-3 minutes each due to the multi-step pipeline.
+
+**Per-post failure handling.** If a day's media gen fails (rate limit, model 4xx, expired key), the per-post `last_error` field captures the specific reason and the dashboard's DayCard surfaces it (e.g., "Image 1080x1350: fal.ai API error 401: Invalid API key"). The user can then either:
+- Skip that day (the dashboard's skip-day affordance — sets `contentType: "skipped"`),
+- Re-run with a different provider (via the per-day "Regenerate with…" picker on the DayCard, which writes `provider_overrides` for just that day), OR
+- Upload their own media for that day.
+
+When polling and reporting progress, surface the `last_error` for any failed day so the user knows which days need attention rather than waiting for the whole batch to drag on retries.
 
 ### Step 8: Schedule
 Ask when they want the campaign to start and how to schedule:
@@ -130,7 +149,7 @@ A campaign can mix Reels, Stories, and feed posts across days. When a day's plan
 - **YouTube videos / Shorts** → `youtube-video` skill. Title is required per video (1–100 chars, separate from caption). For AI-generated video days, set `containsSyntheticMedia: true`.
 - **Reddit cross-posts** → `reddit-post` skill. Each subreddit has its own flair conventions; Reddit days in a campaign typically post once per subreddit, not as a mass blast.
 
-For a Reel day specifically: when planning the imagePrompt for a Reel, also plan the **cover image** prompt — the cover is what shows in the user's feed before the video plays, so it needs to stop the scroll. Generate the cover via Freepik and pass the public URL as `instagramOptions.coverImage` when scheduling.
+For a Reel day specifically: when planning the imagePrompt for a Reel, also plan the **cover image** prompt — the cover is what shows in the user's feed before the video plays, so it needs to stop the scroll. Generate the cover via the resolved image provider (Magnific / fal.ai / Gemini per the user's settings; you can force a specific provider for the cover day with `providerOverrides.image`) and pass the public URL as `instagramOptions.coverImage` when scheduling.
 
 ## Campaign Arc Strategies
 For a book launch:

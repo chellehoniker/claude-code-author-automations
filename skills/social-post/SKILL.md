@@ -67,7 +67,7 @@ Show all platform captions to the user. Ask if they want changes.
 If the post needs an image:
 - Ask if they have an image to upload
 - If uploading: use `aa_upload_media` to get a presigned URL, then PUT the file bytes to `uploadUrl` and use the `publicUrl` in the post
-- If they want AI-generated: route them through the campaign-style image flow (Freepik via `aa_generate_media` on a one-day campaign), then use the resulting `publicUrl` here
+- If they want AI-generated: route them through the campaign-style image flow (`aa_generate_media` on a one-day campaign — routes to the user's configured image provider: Magnific, fal.ai, or Google Gemini), then use the resulting `publicUrl` here
 - Pass `width` and `height` on each `mediaItem` when known — the server uses this to pre-flight Instagram aspect ratios without an extra fetch
 
 ### 8. Upload egress troubleshooting

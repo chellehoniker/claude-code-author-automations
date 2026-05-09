@@ -45,7 +45,7 @@ Or just describe what you want:
 
 > "Post to Threads under the Book Threads topic"
 
-Claude reads your brand guides, writes platform-specific captions, generates media via Freepik when needed, and schedules everything to your calendar or queue. You review every post before anything goes live.
+Claude reads your brand guides, writes platform-specific captions, generates media via your chosen AI provider (Magnific, fal.ai, or Google Gemini — set per pen name in Settings → AI), and schedules everything to your calendar or queue. You review every post before anything goes live.
 
 ## What's bundled
 
@@ -91,6 +91,14 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 - Bugs / feature requests: [open an issue](https://github.com/chellehoniker/claude-code-author-automations/issues)
 
 ## What's new
+
+### v3.6.0 (2026-05-08)
+
+- **Carousel slide configs** in `social-campaign` — per-slide prompts and per-slide text overlays via `slideConfigs` on the day plan. Lossy back-compat with `imagePrompts` (string array) preserved.
+- **Per-day generator overrides** — set `providerOverrides.{image,video,music}` on any day to use a different model than the campaign or pen-name default. Lets authors rescue a wedged provider day without changing the campaign-wide setting.
+- **Multi-provider media gen** — `aa_generate_media` routes per task type to Magnific, fal.ai, or Google Gemini per the resolution chain (per-day → per-campaign → pen-name default). Per-post `last_error` captures specific failure reasons (rate-limit, expired key, unsupported model).
+- **Skip-day + upload-your-own** — skill now mentions both affordances so Claude knows to suggest them when a day's gen fails or the user has their own asset.
+- **Brand sweep** — replaced "Freepik" with the multi-provider naming across `social-post`, `social-campaign`, `instagram-reels`, `youtube-video`, README. The plugin no longer hard-references one image provider in any user-facing copy.
 
 ### v3.3.0 (2026-05-01)
 

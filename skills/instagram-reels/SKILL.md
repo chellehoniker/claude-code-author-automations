@@ -43,7 +43,7 @@ When the user asks for a reel cover image, you have three options:
 2. **Frame from the video:** set `instagramOptions.coverFromTimestamp = <ms into video>` (e.g. 2000 for 2 seconds in). Ignored when `coverImage` is set.
 3. **No cover specified:** Instagram auto-picks the first frame.
 
-If the user says "use a generated cover" or "match my brand," generate the image first via Freepik (the campaign skill's image-generation flow), get the public URL, then schedule with `coverImage`.
+If the user says "use a generated cover" or "match my brand," generate the image first via the campaign skill's image-generation flow (which routes to whichever AI image provider the user has set — Magnific, fal.ai, or Google Gemini), get the public URL, then schedule with `coverImage`.
 
 ## Flow
 
