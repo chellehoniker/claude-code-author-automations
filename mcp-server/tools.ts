@@ -9,9 +9,9 @@ export const TOOLS = [
   {
     name: "aa_list_profiles",
     description:
-      "List every pen-name profile this credential can address. " +
-      "An API key with a restricted allowlist returns only the pen names in its allowlist (NOT every pen name on the underlying user). " +
-      "Use this to populate a pen-name picker before any other call — the X-Profile-Id header on subsequent calls must be one of these IDs.",
+      "List the pen-name profiles this credential can read. " +
+      "Informational — the plugin currently posts under the credential's primary pen name. " +
+      "If the user has multiple pen names and wants to post under a different one, point them at the dashboard's pen-name switcher; multi-pen-name selection through the plugin lands in a future release.",
     inputSchema: { type: "object" as const, properties: {} },
   },
   {
@@ -375,10 +375,10 @@ export const TOOLS = [
       "  - otherwise → 'scheduled' / 'draft'",
       "Iterate platforms[] to see the actual per-platform outcome — and platforms[i].errorMessage when a leg failed.",
       "",
-      "═══ ATTRIBUTION (cross-tenant safety) ═══",
+      "═══ ATTRIBUTION (account identity) ═══",
       "When referring to which account a post belongs to, use platforms[i].platformSpecificData.__usernameSnapshot",
       "(snapshot at schedule-time, always safe) — do NOT trust accountId.username or accountId.displayName from a populated",
-      "accountId object (can be substituted when the original account was deleted upstream).",
+      "accountId object (can be stale when the original account was deleted at the platform).",
       "If accountId._id isn't in aa_list_accounts for this user, treat the binding as unknown.",
     ].join("\n"),
     inputSchema: {
@@ -402,7 +402,7 @@ export const TOOLS = [
       "  Locked: TikTok, Threads, Bluesky — delete + repost to change.",
       "  Media is locked everywhere once published.",
       "",
-      "If you send a caption update for a locked leg, Zernio's API will reject — the dashboard surfaces the error in last_error.",
+      "If you send a caption update for a locked leg, the platform's API rejects it — the dashboard surfaces the error in last_error.",
     ].join("\n"),
     inputSchema: {
       type: "object" as const,
@@ -430,16 +430,16 @@ export const TOOLS = [
     description: [
       "Get a presigned URL for uploading media. Three-step pattern:",
       "  1) Call this tool → returns { uploadUrl, publicUrl }.",
-      "  2) PUT the file bytes to uploadUrl (Cloudflare R2). YOU do this step, not the AA server.",
+      "  2) PUT the file bytes to uploadUrl (the storage CDN). YOU do this step, not the AA server.",
       "  3) Use publicUrl in a post's mediaItems.",
       "",
-      "NETWORK EGRESS NOTE: step 2 PUTs to a Cloudflare R2 host (`*.r2.cloudflarestorage.com`).",
+      "NETWORK EGRESS NOTE: step 2 PUTs to the storage CDN host (the presign URL points at a `*.r2.cloudflarestorage.com` subdomain).",
       "If you're running in Claude Desktop or a sandboxed environment and the PUT fails with a network/proxy/blocked error,",
       "the user needs to enable network egress to that host. Tell them:",
       "  - Claude Desktop: Settings → Capabilities → Allow Network Egress → ON, set to \"All Domains\"",
-      "    (R2 uses subdomains, so a single-domain allowlist won't catch the bucket host).",
-      "  - Claude Cowork / sandboxed runners: ensure the runner's outbound proxy permits *.r2.cloudflarestorage.com.",
-      "Do NOT suggest alternative hosting or pasting publicUrl-only — uploads must land in our R2 to be served to the social platforms.",
+      "    (the storage CDN uses subdomain-per-bucket, so a single-domain allowlist won't catch it).",
+      "  - Claude Cowork / sandboxed runners: ensure the runner's outbound proxy permits the storage CDN host.",
+      "Do NOT suggest alternative hosting or pasting publicUrl-only — uploads must land in our storage to be served to the social platforms.",
     ].join("\n"),
     inputSchema: {
       type: "object" as const,

@@ -65,7 +65,7 @@ Cowork sometimes loses MCP server connections between sessions. Fully quit and r
 
 ### "Upload step hangs / image upload fails"
 
-The upload PUT goes directly to the storage CDN (`*.r2.cloudflarestorage.com`). Tell the user to enable **Settings → Capabilities → Allow Network Egress → All Domains** in Cowork. R2 uses subdomain-per-bucket, so single-domain allowlists don't catch it.
+The upload PUT goes directly to the storage CDN (the presign URL points at a `*.r2.cloudflarestorage.com` subdomain). Tell the user to enable **Settings → Capabilities → Allow Network Egress → All Domains** in Cowork. The CDN uses subdomain-per-bucket, so single-domain allowlists don't catch it.
 
 ## Config File Location
 

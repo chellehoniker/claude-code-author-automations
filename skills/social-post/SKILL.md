@@ -35,7 +35,7 @@ Call `aa_get_guides` to get their brand voice, prose style, and social media str
 ### 3. Get Their Accounts
 Call `aa_list_accounts` to see which platforms they have connected.
 
-If the user has multiple pen names and hasn't told you which one they're posting under, call `aa_list_profiles` first and ask. Every other call is scoped by `X-Profile-Id` (handled automatically by the plugin's MCP client) — picking the wrong pen name posts to the wrong identity.
+The plugin currently posts under the credential's primary pen name only. If the user has multiple pen names and asks to post under a different one, point them at the dashboard's pen-name switcher — multi-pen-name selection through the plugin lands in a future release. You can call `aa_list_profiles` to confirm which pen names the credential can read.
 
 ### 4. Write Platform-Specific Captions
 Write a DIFFERENT caption for each platform. Follow these rules:
@@ -71,7 +71,7 @@ If the post needs an image:
 
 ### 8. Upload egress troubleshooting
 
-The `aa_upload_media` step PUTs file bytes directly to the storage CDN (`*.r2.cloudflarestorage.com`). If the user's sandbox blocks that host (common in Claude Cowork's default network egress settings), the PUT silently fails.
+The `aa_upload_media` step PUTs file bytes directly to the storage CDN (the presign URL points at a `*.r2.cloudflarestorage.com` subdomain). If the user's sandbox blocks that host (common in Claude Cowork's default network egress settings), the PUT silently fails.
 
 If the user reports the upload "hangs" or "doesn't work," tell them:
 > "The upload step needs network egress to the storage CDN. In Claude Cowork: **Settings → Capabilities → Allow Network Egress** should be ON, set to 'All Domains' (R2 uses subdomains, so a single-domain allowlist won't catch it)."
@@ -120,12 +120,12 @@ Show what was created and when it will post.
 - Respect the user's brand guide and prose style from `aa_get_guides`
 - If posting to TikTok, default `tiktokOptions.draft` to `false` so it publishes live (the server already handles this)
 - Use the user's timezone (ask if not known)
-- For platforms with rich options (IG/Threads/YT/Reddit), let the specialist skills do their job — they catch validation issues locally and avoid round-trips to the upstream API
+- For platforms with rich options (IG/Threads/YT/Reddit), let the specialist skills do their job — they catch validation issues locally and avoid round-trips to the platform.
 
-## Cross-tenant safety (when reading post responses)
+## Account identity (when reading post responses)
 
 Post responses include a `platforms[]` array, one entry per platform leg. When you need to refer to *which account* a post belongs to (in summaries, error messages, "your post on X failed" copy):
 
-- **Authoritative identity**: `platforms[i].platformSpecificData.__usernameSnapshot`. Captured at schedule-time, never repopulated upstream — it's the snapshot of the user's own handle as it was when the post was created. Always safe.
-- **Do NOT trust** `platforms[i].accountId.username` or `platforms[i].accountId.displayName` from a populated `accountId` object. The scheduling provider can substitute a different connection's record when the original was deleted upstream. Our API boundary now strips known cross-profile substitutions, but treating `__usernameSnapshot` as the authoritative source is belt + suspenders.
-- **If `accountId._id` doesn't appear in `aa_list_accounts`** for the current user, treat the binding as unknown. Tell the user something like "this post references an account that's no longer in your workspace" — do NOT speculate about who it might belong to or quote any name you can't ground in the user's own `aa_list_accounts` response.
+- **Authoritative identity**: `platforms[i].platformSpecificData.__usernameSnapshot`. Captured at schedule-time, frozen — it's the snapshot of the user's own handle as it was when the post was created. Always safe.
+- **Do NOT trust** `platforms[i].accountId.username` or `platforms[i].accountId.displayName` from a populated `accountId` object. These can become stale after a platform-side disconnect/reconnect; the API boundary strips known stale substitutions, but treating `__usernameSnapshot` as the authoritative source is belt + suspenders.
+- **If `accountId._id` doesn't appear in `aa_list_accounts`** for the current user, treat the binding as unknown. Tell the user something like "this post references an account that's no longer connected to your pen name" — do NOT speculate about who it might belong to or quote any name you can't ground in the user's own `aa_list_accounts` response.

@@ -91,7 +91,7 @@ Claude will:
 
 | Tool | Description |
 |------|-------------|
-| `aa_list_profiles` | List the pen-name profiles this credential can address (use first to know your X-Profile-Id options) |
+| `aa_list_profiles` | List the pen-name profiles this credential can read (informational — plugin posts under the primary today; multi-pen-name selection lands later) |
 | `aa_list_accounts` | See your connected social accounts |
 | `aa_get_guides` | Read your content guides (brand, prose, social) |
 | `aa_queue_preview` | See upcoming queue slots |
@@ -154,7 +154,7 @@ Cross-post my launch announcement to r/Fantasy and r/SelfPublishing.
 
 | Version | What changed |
 |---|---|
-| **2.2.0** | New tools: `aa_list_profiles` (pen-name picker), `aa_preflight_post` (validate without scheduling), `aa_list_queues` (per-platform queue defs). `aa_list_posts` now reports per-leg status + per-leg `errorMessage` + `publishedAt` (Phase 6e — `aa_post_deliveries` is the source of truth). `aa_update_post` now supports per-leg edit-after-publish where the platform's API allows it (Instagram caption, LinkedIn caption, Pinterest title/desc/link, etc.). Media generation is multi-provider (Magnific / fal.ai / Gemini) with per-day overrides via `aa_save_campaign_plan.providerOverrides` |
+| **2.2.0** | New tools: `aa_list_profiles` (read your pen-name list), `aa_preflight_post` (validate without scheduling), `aa_list_queues` (per-platform queue defs). `aa_list_posts` now reports per-leg status + per-leg `errorMessage` + `publishedAt`. `aa_update_post` now supports per-leg edit-after-publish where the platform's API allows it (Instagram caption, LinkedIn caption, Pinterest title/desc/link, etc.). Media generation is multi-provider (Magnific / fal.ai / Gemini) with per-day overrides via `aa_save_campaign_plan.providerOverrides` |
 | **2.1.0** | Skills expansion: new `instagram-reels`, `threads-post`, `youtube-video`, `reddit-post` specialists. Updated `social-post` as orchestrator with platform routing |
 | **2.0.0** | **No Node.js required.** MCP server ships as a precompiled per-platform binary (~60MB, downloaded on first session) instead of a JS bundle invoked via `node`. Closes the silent-install-failure conversion blocker for non-technical authors |
 | 1.6.0 | Whitelabel cleanup. Single self-contained JS bundle removed the runtime `npm install` |
