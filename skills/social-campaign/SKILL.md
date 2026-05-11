@@ -1,26 +1,36 @@
 ---
 name: social-campaign
-description: Use when the user wants to create a multi-day social media campaign, content plan, posting schedule, book launch promotion, or any sustained content strategy. Triggers on "campaign", "content plan", "30 days of posts", "book launch social", "schedule a week of content".
+description: Use when the user wants to create a multi-post social media campaign, content plan, posting schedule, book launch promotion, or any sustained content strategy. Triggers on "campaign", "content plan", "a batch of posts", "book launch social", "schedule a week of content".
 ---
 
 # Creating AI-Powered Social Media Campaigns
 
+## The model — campaigns are POSTS, not days
+
+A campaign produces a fixed **number of independent posts** — 1, 3, 7, or 14. It does NOT have a calendar, a duration, or a "day 1 / day 2" structure. Each post is a standalone item with a theme, per-platform captions, and one media item (image / video / carousel).
+
+**Timing is the queue's job, not the campaign's.** The user configures a posting queue **per platform** — Facebook might run Mon/Wed/Fri at 8am and 2pm; Instagram might run daily at 11am, 4pm, and 7pm. Entirely the user's choice, and it varies per platform. When you schedule a campaign, each post drops into the next open slot in that platform's queue. The same N posts can drain at different rates on different platforms — that's correct; that's what queues are for. There is no "spread across days" mode and no campaign-level start date.
+
+So: you write N posts, the user reviews them, scheduling drops them into the per-platform queues, and the queues decide when each one publishes.
+
 ## When to Use
-- User wants a multi-day content plan (1-30 days)
+- User wants a batch of social content (1–14 posts)
 - User mentions a book launch, product launch, or promotional campaign
 - User wants to batch-create and schedule social media content
 
 ## The Hybrid Model
-YOU write the captions — not a server-side AI. This is better because you have the full conversation context: what book they're writing, their audience, their goals, their voice. The server handles media generation (images, videos, music) and scheduling.
+YOU write the captions — not a server-side AI. This is better because you have the full conversation context: what book they're writing, their audience, their goals, their voice. The server handles media generation (images, videos, music) and queue-based scheduling.
 
 ## Campaign Flow
 
 ### Step 1: Understand the Objective
 Ask:
 - What are they promoting? (book, product, service, brand)
-- How many days? (1, 3, 7, 14, or 30)
+- How many posts? (1, 3, 7, or 14)
 - Which platforms? (call `aa_list_accounts` to see what's connected)
 - What type of content? (images only, full mix with carousels/videos, videos only)
+
+Don't suggest a post count — let the user pick from 1 / 3 / 7 / 14. (They can run a 14-carousel campaign, then a separate 3-video campaign, then a 7-image one — that's the intended pattern, not one giant mixed batch.)
 
 ### Step 2: Pick the right persona
 
@@ -45,39 +55,39 @@ Call `aa_create_campaign` with:
 {
   "name": "Campaign name",
   "objective": "What they told you",
-  "duration_days": 7,
+  "post_count": 7,
   "platforms": ["instagram", "tiktok", "facebook"],
   "content_mix": "mixed",
   "guideTag": "Cozy Mystery Series"
 }
 ```
 
-`guideTag` is optional — omit it (or pass null) to use the user's default persona. When set, the server-side AI campaign-builder reads that persona's guides for every generation in this campaign and stores the choice on the campaign row so regenerations stay on the same voice.
+`post_count` is how many posts the campaign generates (1, 3, 7, or 14). `guideTag` is optional — omit it (or pass null) to use the user's default persona. When set, the server-side AI campaign-builder reads that persona's guides for every generation in this campaign and stores the choice on the campaign row so regenerations stay on the same voice.
 
 ### Step 4: Write the Content Plan
-Create the full plan yourself. For each day, write:
-- **theme**: Brief description of the day's content angle
+Create the full plan yourself. For each post, write:
+- **theme**: Brief description of the post's content angle
 - **captions**: A UNIQUE caption for EACH platform (see platform rules below)
 - **imagePrompt**: Detailed description for AI image generation
 - For carousels: **slideConfigs** (preferred) — array of `{ prompt, overlay? }` per slide. Each slide can carry its own short text overlay (`overlay.text`, `overlay.position` = `top|center|bottom`, `overlay.style` for an FFmpeg drawtext preset). Plan 3–10 slides telling a visual story; the dashboard's slide-count picker drives `scene_count` on the campaign.
   - Back-compat: `imagePrompts` (string array) still works — the server pads/trims to the requested slide count, but you lose per-slide overlays. Prefer `slideConfigs`.
-  - Carousel strategy: by default each platform gets the full slide stack. For `single_repeated` campaigns (one image looped across days as a brand bumper), set the day's `contentType: "image"` and use the same `imagePrompt` — don't fake it with a one-slide carousel.
+  - Carousel strategy: by default each carousel post gets the full slide stack. For `single_repeated` carousels (one base image with the text overlays carrying the content), set `carouselImageStrategy: "single_repeated"` on the campaign and provide a single `imagePrompt` plus a `slideTexts` array — don't fake it with a one-slide carousel.
 - For videos: **videoPrompt** (camera motion) + **musicPrompt** (audio mood) + **videoDuration** (5/10/20/30/60 s; >10s chains multiple FFmpeg-concat'd clips). Music caps at 30s per clip and FFmpeg loops it under longer videos automatically.
 - **contentType**: "image", "carousel", or "video"
-- **providerOverrides** (optional): per-day generator override shaped `{ image?: { provider, model }, video?: {...}, music?: {...} }`. Wins over the campaign-level + pen-name defaults. Use when one or two days deserve a different model — e.g., default to fal.ai/SDXL for cost but use Gemini's `gemini-3-pro-image-preview` for the cover-reveal day.
+- **providerOverrides** (optional): per-post generator override shaped `{ image?: { provider, model }, video?: {...}, music?: {...} }`. Wins over the campaign-level + pen-name defaults. Use when one or two posts deserve a different model — e.g., default to fal.ai/SDXL for cost but use Gemini's `gemini-3-pro-image-preview` for the cover-reveal post.
 
-If the user has their own image/video for a particular day, skip the AI prompts for that day and have them upload via `aa_upload_media`; pass the resulting `publicUrl` into the day's plan. The review screen has an "Upload my own" affordance for this.
+If the user has their own image/video for a particular post, skip the AI prompts for that post and have them upload via `aa_upload_media`; pass the resulting `publicUrl` into the post's plan. The review screen has an "Upload my own" affordance for this.
 
-Build narrative momentum across the days. Don't repeat themes. Each day should feel fresh but connected to the campaign arc.
+Vary tone, hook technique, and intensity across the posts — they should not all read in the same register, and any one of them could be the first one a reader sees. Don't repeat themes. Each post should feel fresh but connected to the campaign's objective.
 
 ### Step 5: Present for Review
-Show the user the plan day by day. For each day show:
+Show the user the plan post by post. For each post show:
 - The theme
 - Each platform's caption
 - The image prompt
 - Content type
 
-Ask: "How does this look? Want me to adjust any day's content?"
+Ask: "How does this look? Want me to adjust any post?"
 
 ### Step 6: Save the Plan
 Once approved, call `aa_save_campaign_plan` with the campaignId and plan array.
@@ -88,7 +98,7 @@ Poll `aa_check_media_status` every 30 seconds until complete.
 Report progress: "4 of 7 images generated..."
 
 **Multi-provider routing.** The server resolves which provider to use per task type at job start, in this priority order:
-1. The day's `providerOverrides` (set in Step 4) wins for that day.
+1. The post's `providerOverrides` (set in Step 4) wins for that post.
 2. The campaign's `image_provider` / `video_provider` / `music_provider` columns win next.
 3. The pen name's defaults from Settings → AI win last.
 
@@ -103,33 +113,29 @@ For video posts, the server automatically:
 
 The user will see the complete video with music in the finalize/review step. Videos take 2-3 minutes each due to the multi-step pipeline.
 
-**Per-post failure handling.** If a day's media gen fails (rate limit, model 4xx, expired key), the per-post `last_error` field captures the specific reason and the dashboard's DayCard surfaces it (e.g., "Image 1080x1350: fal.ai API error 401: Invalid API key"). The user can then either:
-- Skip that day (the dashboard's skip-day affordance — sets `contentType: "skipped"`),
-- Re-run with a different provider (via the per-day "Regenerate with…" picker on the DayCard, which writes `provider_overrides` for just that day), OR
-- Upload their own media for that day.
+**Per-post failure handling.** If a post's media gen fails (rate limit, model 4xx, expired key), the per-post `last_error` field captures the specific reason and the dashboard's post card surfaces it (e.g., "Image 1080x1350: fal.ai API error 401: Invalid API key"). The user can then either:
+- Skip that post (the dashboard's skip affordance — sets `contentType: "skipped"`),
+- Re-run with a different provider (via the per-post "Regenerate with…" picker on the post card, which writes `provider_overrides` for just that post), OR
+- Upload their own media for that post.
 
-When polling and reporting progress, surface the `last_error` for any failed day so the user knows which days need attention rather than waiting for the whole batch to drag on retries.
+When polling and reporting progress, surface the `last_error` for any failed post so the user knows which posts need attention rather than waiting for the whole batch to drag on retries.
 
 ### Step 8: Schedule
-Ask when they want the campaign to start and how to schedule:
-- **Spread**: One post per day at a set time
-- **Queue**: Fill their existing queue slots
-- **Custom**: Multiple times per day
+There is only one scheduling mode: the posts drop into the user's **per-platform queues**, and each queue decides when its posts publish. There is no campaign start date and no per-post times — if the user asks for those, explain that timing lives in their queue settings (`aa_list_queues` / `aa_update_queue`, or the dashboard's Queue page).
+
+If the user has no queue configured, tell them to set one up first (`aa_create_queue` or the dashboard's Queue page) — otherwise the posts wait until slots exist.
 
 Call `aa_schedule_campaign` with:
 ```json
 {
   "campaignId": "...",
-  "startDate": "2026-03-25",
   "timezone": "America/Chicago",
-  "scheduleMode": "spread",
-  "accountMap": { "instagram": "acc_id", "tiktok": "acc_id" },
-  "postTimes": ["10:00", "14:00"]
+  "accountMap": { "instagram": "acc_id", "tiktok": "acc_id" }
 }
 ```
 
 ### Step 9: Confirm
-Tell them how many posts were scheduled and when the first one goes out.
+Tell them how many posts were dropped into their queues. The queues decide when each one publishes — point them at the dashboard's Queue page (or `aa_list_queues`) to see or adjust the cadence per platform.
 
 ## Platform Caption Rules
 - **Instagram**: Storytelling hook, 5-10 hashtags, CTA. Up to 2,200 chars.
@@ -140,31 +146,34 @@ Tell them how many posts were scheduled and when the first one goes out.
 - **Pinterest**: Keyword-rich for search discovery.
 - **Threads**: Casual, community-focused, under 500 chars.
 
-## Platform options per day (read these specialist skills if a day's plan needs them)
+## Platform options per post (read these specialist skills if a post's plan needs them)
 
-A campaign can mix Reels, Stories, and feed posts across days. When a day's plan triggers a richer set of options, delegate to the right specialist skill rather than embedding the rules here:
+A campaign can mix Reels, Stories, and feed posts across its posts. When a post's plan triggers a richer set of options, delegate to the right specialist skill rather than embedding the rules here:
 
-- **Instagram Reels / Trial Reels / Stories** → `instagram-reels` skill. Trial Reels (`trialParams.graduationStrategy: 'SS_PERFORMANCE'` for set-and-forget, `'MANUAL'` for author-controlled) are particularly effective for indie author promo right now. Use them on launch-tease days where you want non-follower reach first.
-- **Threads topics** → `threads-post` skill. If the campaign has a hashtag like `#BookThreads` running through it, set `threadsOptions.topicTag` to match so each day's Threads post files under the same topic.
-- **YouTube videos / Shorts** → `youtube-video` skill. Title is required per video (1–100 chars, separate from caption). For AI-generated video days, set `containsSyntheticMedia: true`.
-- **Reddit cross-posts** → `reddit-post` skill. Each subreddit has its own flair conventions; Reddit days in a campaign typically post once per subreddit, not as a mass blast.
+- **Instagram Reels / Trial Reels / Stories** → `instagram-reels` skill. Trial Reels (`trialParams.graduationStrategy: 'SS_PERFORMANCE'` for set-and-forget, `'MANUAL'` for author-controlled) are particularly effective for indie author promo right now. Use them on launch-tease posts where you want non-follower reach first.
+- **Threads topics** → `threads-post` skill. If the campaign has a hashtag like `#BookThreads` running through it, set `threadsOptions.topicTag` to match so each Threads post files under the same topic.
+- **YouTube videos / Shorts** → `youtube-video` skill. Title is required per video (1–100 chars, separate from caption). For AI-generated video posts, set `containsSyntheticMedia: true`.
+- **Reddit cross-posts** → `reddit-post` skill. Each subreddit has its own flair conventions; Reddit posts in a campaign typically go once per subreddit, not as a mass blast.
 
-For a Reel day specifically: when planning the imagePrompt for a Reel, also plan the **cover image** prompt — the cover is what shows in the user's feed before the video plays, so it needs to stop the scroll. Generate the cover via the resolved image provider (Magnific / fal.ai / Gemini per the user's settings; you can force a specific provider for the cover day with `providerOverrides.image`) and pass the public URL as `instagramOptions.coverImage` when scheduling.
+For a Reel post specifically: when planning the imagePrompt for a Reel, also plan the **cover image** prompt — the cover is what shows in the user's feed before the video plays, so it needs to stop the scroll. Generate the cover via the resolved image provider (Magnific / fal.ai / Gemini per the user's settings; you can force a specific provider for that post's cover with `providerOverrides.image`) and pass the public URL as `instagramOptions.coverImage` when scheduling.
 
 ## Campaign Arc Strategies
-For a book launch:
-1. **Tease** (days 1-3): Behind-the-scenes, mood boards, character hints
-2. **Build** (days 4-7): Cover reveal, excerpt, author's note
-3. **Launch** (days 8-10): Release announcement, links, reviews
-4. **Sustain** (days 11+): Reader reactions, bonus content, next steps
+The posts publish in the order the queue drains them, so think of the plan as a sequence even though there's no calendar. For a book launch with, say, 14 posts:
+1. **Tease** (first ~quarter): Behind-the-scenes, mood boards, character hints
+2. **Build** (next ~quarter): Cover reveal, excerpt, author's note
+3. **Launch** (middle): Release announcement, links, reviews
+4. **Sustain** (final third): Reader reactions, bonus content, next steps
+
+Scale the proportions to whatever post count the user picked — a 3-post campaign is one tease, one launch, one follow-up.
 
 For ongoing branding:
 - Mix value posts (tips, insights) with personality posts (behind-the-scenes)
-- Every 3rd-4th post should have a call to action
+- Every 3rd–4th post should have a call to action
 - Use carousels for educational content, videos for personality content
 
 ## Important
 - NEVER reuse the same caption across platforms
 - Respect the user's guides — match their voice exactly
 - Write image prompts that are specific and detailed
-- For video days, describe the motion (zoom, pan, cinematic) and the music mood
+- For video posts, describe the motion (zoom, pan, cinematic) and the music mood
+- Never talk about campaign "days" or "duration" — campaigns generate N posts; the queue handles timing

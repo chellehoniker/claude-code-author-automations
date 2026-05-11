@@ -39,7 +39,7 @@ This adds the conversational skills (`pen-names`, `instagram-reels`, `threads-po
 
 Or just describe what you want:
 
-> "Create a 14-day social media campaign to launch Curses and Currents across Instagram, TikTok, and Facebook"
+> "Create a 14-post social media campaign to launch Curses and Currents across Instagram, TikTok, and Facebook"
 
 > "Schedule 4 Trial Reels for next week — auto-graduate based on engagement"
 

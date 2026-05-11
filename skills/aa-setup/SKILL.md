@@ -65,7 +65,7 @@ If the user previously installed plugin v3.0–v3.2 and has a stuck `author-auto
 
 ### Step 4 — Confirm
 
-> "You're all set. Try asking me to 'list my connected social accounts', 'create a post about [topic]', 'schedule a Trial Reel for my book launch', or 'start a 14-day campaign for my spring release'."
+> "You're all set. Try asking me to 'list my connected social accounts', 'create a post about [topic]', 'schedule a Trial Reel for my book launch', or 'start a 14-post campaign for my spring release'."
 
 ## Troubleshooting Reference
 
