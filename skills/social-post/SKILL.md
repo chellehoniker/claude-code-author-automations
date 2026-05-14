@@ -21,6 +21,8 @@ This is the **orchestrator**. It handles the universal flow: read guides, list a
 | "Threads topic," "thread chain on Threads" | `threads-post` |
 | "YouTube video," "schedule a YT Short," "playlist" | `youtube-video` |
 | "Reddit," "r/<subreddit>," "post to subreddit" | `reddit-post` |
+| "TikTok draft," "TikTok inbox," "paid partnership," "AI-generated video," "duet/stitch" | `tiktok-post` |
+| "LinkedIn," "link in the comments," "LinkedIn PDF," "LinkedIn document" | `linkedin-post` |
 | Generic "post to <platform>" with no special features | Stay here |
 
 The specialist skills write the `*Options` block. This skill takes that block, adds scheduling, and calls `aa_create_post`.
@@ -57,8 +59,16 @@ If any selected account is Instagram and the user mentioned Reels/Stories/Trial 
 If any selected account is Threads and the user mentioned topic tags or thread chains — defer to `threads-post`.
 If any selected account is YouTube — defer to `youtube-video` (title is required).
 If any selected account is Reddit — defer to `reddit-post` (subreddit + title are required).
+If any selected account is TikTok and the user mentioned drafts, brand partnerships, AI-generated video, or interaction toggles — defer to `tiktok-post`.
+If any selected account is LinkedIn and the post includes an external URL or a PDF — defer to `linkedin-post` (the firstComment reach trick alone is worth the round-trip).
 
-The specialist skill writes the right `*Options` block; you carry it through into the `aa_create_post` call.
+For the platforms below WITHOUT a dedicated skill, inline the relevant `*Options` field yourself — these are simple single-field controls:
+
+- **Facebook draft**: `facebookOptions.draft: true` stages the post in Publishing Tools instead of publishing. Supported for Feed posts + Reels only (Stories don't have drafts). Drafts expire in ~30 days. Use when the user says "save for later," "review before publishing," or "stage for approval."
+- **Twitter long video**: `platformOptions.twitter.longVideo: true` enables X Premium's amplify_video category (up to ~10 min vs the standard 140s cap). Only set on video posts AND only if the user has an active X Premium subscription with API allowlisting. If they don't say they have Premium, leave it off.
+- **Pinterest destination link**: `platformOptions.pinterest.link: "<URL>"` sets the click-through URL for every pin. Authors almost always want this set to their book sales page or landing page — ASK if the post is going to Pinterest and the URL isn't already obvious from context.
+
+The specialist skill (or your inline option) writes the right `*Options` block; you carry it through into the `aa_create_post` call.
 
 ### 6. Present the Captions
 Show all platform captions to the user. Ask if they want changes.

@@ -154,6 +154,19 @@ A campaign can mix Reels, Stories, and feed posts across its posts. When a post'
 - **Threads topics** → `threads-post` skill. If the campaign has a hashtag like `#BookThreads` running through it, set `threadsOptions.topicTag` to match so each Threads post files under the same topic.
 - **YouTube videos / Shorts** → `youtube-video` skill. Title is required per video (1–100 chars, separate from caption). For AI-generated video posts, set `containsSyntheticMedia: true`.
 - **Reddit cross-posts** → `reddit-post` skill. Each subreddit has its own flair conventions; Reddit posts in a campaign typically go once per subreddit, not as a mass blast.
+- **TikTok with drafts, brand partnerships, or AI-generated video** → `tiktok-post` skill. If the campaign uses AI-generated video for any TikTok post, set `videoMadeWithAi: true`. If the user is promoting their own book/brand, set `commercialContentType: "brand_organic"` + `isBrandOrganicPost: true` — the pair is required.
+- **LinkedIn with external URLs or PDF posts** → `linkedin-post` skill. The 40–50% reach penalty on caption-URLs applies per post, not per campaign — every LinkedIn post in a campaign with a link should put the URL in `firstComment`. Set this once at the campaign level via `platform_options.linkedin.firstComment` and it applies to every post.
+
+For campaign-level platform options (apply identically to every post in the campaign), the Campaigns UI also exposes:
+- TikTok: `draft`, `commercialContentType` + paired flag, `description` (long-form for photo carousels)
+- Facebook: `draft`, `firstComment`, Reel `title`
+- Instagram: `firstComment`
+- LinkedIn: `firstComment`
+- YouTube: `firstComment`
+- Twitter: `longVideo` (X Premium amplify_video)
+- Pinterest: `link` (destination URL on every pin)
+
+Set them on the campaign once instead of repeating per-post.
 
 For a Reel post specifically: when planning the imagePrompt for a Reel, also plan the **cover image** prompt — the cover is what shows in the user's feed before the video plays, so it needs to stop the scroll. Generate the cover via the resolved image provider (Magnific / fal.ai / Gemini per the user's settings; you can force a specific provider for that post's cover with `providerOverrides.image`) and pass the public URL as `instagramOptions.coverImage` when scheduling.
 

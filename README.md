@@ -52,7 +52,7 @@ Claude reads your brand guides, writes platform-specific captions, generates med
 | Component | Triggers / Notes |
 |---|---|
 | **22 MCP tools** | `aa_list_accounts`, `aa_create_post`, `aa_create_campaign`, queue CRUD (`aa_list_queues` / `aa_create_queue` / `aa_update_queue` / `aa_delete_queue`), guide CRUD (`aa_update_guide` / `aa_rename_guide_set` / `aa_delete_guide_set`), etc. — full reference at [/docs/api](https://authorautomations.social/docs/api) |
-| **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair), `queues` (per-platform + per-persona scheduling), `guides-author` (chat-edit personas + content guides) |
+| **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair), `tiktok-post` (drafts, brand-partner disclosure, AI attestation), `linkedin-post` (the firstComment URL trick, PDF document posts), `queues` (per-platform + per-persona scheduling), `guides-author` (chat-edit personas + content guides) |
 | **Slash commands** | `/aa-post <topic>`, `/aa-campaign <objective>` |
 
 The skills make Claude fluent in platform-specific options. Saying "schedule 8 trial reels" auto-routes through the `instagram-reels` skill which knows the right `instagramOptions.trialParams` shape.
@@ -91,6 +91,14 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 - Bugs / feature requests: [open an issue](https://github.com/chellehoniker/claude-code-author-automations/issues)
 
 ## What's new
+
+### v3.9.0 (2026-05-14)
+
+- **Two new specialist skills** matching the per-platform option expansion that landed in social-standalone today:
+  - `tiktok-post` — TikTok drafts (Creator Inbox), the `commercialContentType` + paired-brand-flag contract (brand_organic/brand_content rejection if you forget the pair), AI-generated-video attestation, content-preview + express-consent policy fields. Trigger on "tiktok draft," "paid partnership," "ai generated video," "duet/stitch."
+  - `linkedin-post` — The first-comment URL trick (LinkedIn down-ranks caption-URLs 40–50%, comments are exempt — put the link in `firstComment` and end the caption with "Link in the comments 👇"). PDF document posts with `documentTitle`. Link-preview suppression.
+- **Orchestrator updates** — `social-post` now routes TikTok and LinkedIn requests to the new specialists, and folds in three single-field controls inline: Facebook `draft` (Publishing Tools), Twitter `longVideo` (X Premium amplify_video), Pinterest `link` (destination URL per pin).
+- **Campaign-level platform options** documented in `social-campaign`: TikTok draft + commercial content + long description, Facebook draft + firstComment + Reel title, Instagram/LinkedIn/YouTube firstComment, Twitter longVideo, Pinterest link. Apply once at the campaign level instead of per-post.
 
 ### v3.7.1 (2026-05-08)
 
