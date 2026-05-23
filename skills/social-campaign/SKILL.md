@@ -92,9 +92,11 @@ Ask: "How does this look? Want me to adjust any post?"
 ### Step 6: Save the Plan
 Once approved, call `aa_save_campaign_plan` with the campaignId and plan array.
 
+**If you created this campaign under a non-primary pen name (you passed `profileId` to `aa_create_campaign`), pass the SAME `profileId` here.** Without it, the server scopes to the user's primary pen name, doesn't find the campaign there, and returns 404. Same applies to every campaign-lifecycle call below (`aa_generate_media`, `aa_check_media_status`, `aa_schedule_campaign`) — thread `profileId` through every step. See the `pen-names` skill for the full list of profile-scoped tools.
+
 ### Step 7: Generate Media
-Call `aa_generate_media` with the campaignId.
-Poll `aa_check_media_status` every 30 seconds until complete.
+Call `aa_generate_media` with the campaignId (and the same `profileId` if non-primary pen name).
+Poll `aa_check_media_status` every 30 seconds until complete (same `profileId` rule).
 Report progress: "4 of 7 images generated..."
 
 **Multi-provider routing.** The server resolves which provider to use per task type at job start, in this priority order:
@@ -125,10 +127,11 @@ There is only one scheduling mode: the posts drop into the user's **per-platform
 
 If the user has no queue configured, tell them to set one up first (`aa_create_queue` or the dashboard's Queue page) — otherwise the posts wait until slots exist.
 
-Call `aa_schedule_campaign` with:
+Call `aa_schedule_campaign` with (include `profileId` if the campaign is on a non-primary pen name):
 ```json
 {
   "campaignId": "...",
+  "profileId": "...",
   "timezone": "America/Chicago",
   "accountMap": { "instagram": "acc_id", "tiktok": "acc_id" }
 }

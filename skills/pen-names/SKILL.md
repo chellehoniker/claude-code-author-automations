@@ -9,7 +9,15 @@ description: Use when the user mentions a specific pen name, has multiple pen na
 
 Authors who write under multiple pen names rely on the platform's pen-name separation: each pen name has its own connected social accounts, calendar, queue, books library, and brand voice guides. The web app has a top-right dropdown to switch between them.
 
-In the plugin, every profile-scoped tool (`aa_list_accounts`, `aa_create_post`, `aa_list_posts`, `aa_list_campaigns`, `aa_create_campaign`, `aa_queue_preview`, `aa_get_guides`) accepts an optional `profileId` argument. **Without `profileId`, calls go to the user's primary pen name.** With `profileId`, calls scope to that specific pen name's data.
+In the plugin, every profile-scoped tool accepts an optional `profileId` argument. **Without `profileId`, calls go to the user's primary pen name.** With `profileId`, calls scope to that specific pen name's data.
+
+Tools that accept `profileId`:
+
+- **Discovery + listing** — `aa_list_accounts`, `aa_list_posts`, `aa_list_campaigns`, `aa_queue_preview`, `aa_get_guides`
+- **Post lifecycle** — `aa_create_post`, `aa_update_post`, `aa_delete_post`
+- **Campaign lifecycle** — `aa_create_campaign`, `aa_save_campaign_plan`, `aa_generate_media`, `aa_check_media_status`, `aa_schedule_campaign`
+
+The campaign + post lifecycle tools are easy to miss: a campaign you created on a non-primary pen name will 404 from `aa_save_campaign_plan` / `aa_generate_media` / `aa_schedule_campaign` if you don't carry the `profileId` through every step. Same with edits to a post created under a non-primary pen name — `aa_update_post` / `aa_delete_post` need the matching `profileId` or they'll 404.
 
 ## When to use this skill
 
