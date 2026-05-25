@@ -1,0 +1,126 @@
+---
+name: create-meta-ad
+description: Use when the user wants to build a fresh Facebook or Instagram ad from scratch — not promoting an existing post. Triggers on "create an ad", "build a Meta ad from scratch", "I want to advertise X", "design an ad campaign", "create a Facebook ad".
+---
+
+# Create a standalone Meta ad — Facebook + Instagram, real money
+
+Build a Facebook or Instagram ad from scratch — campaign + ad set + creative in one flow. This spends real money against the user's connected Meta ad account.
+
+If the user wants to **promote an existing post** (boost it), STOP and route to the `boost-post` skill instead — that flow is simpler and reuses the post's media + caption.
+
+## Quick facts
+
+- **STOS-only feature** — real spend, not in the free Cowork tier. If the user isn't on STOS, tell them and stop.
+- **Pen-name-scoped.** Every tool here takes `profileId`. Switch via `pen-names` first if a specific pen name was mentioned and carry the resolved `profileId` through every call.
+- **Defaults to PAUSED.** Always create with `status: "paused"`. The user explicitly launches afterward.
+- Confirm before `aa_create_standalone_ad` with an AlertDialog-style prompt: "This will create a paused ad with up to $X potential spend. Type 'go'."
+
+## Decision tree
+
+| User says... | Tool / skill |
+|---|---|
+| "What ad accounts do I have" | `aa_list_ad_accounts` |
+| "Find interests for 'cozy mystery readers'" | `aa_search_ad_interests` |
+| "What's the engagement benchmark for romance ads" | `aa_get_analytics` |
+| "Boost my last Instagram post" / "promote that reel" | **`boost-post` skill (NOT this one)** |
+| "Build me an ad for my new book" / "Create a Facebook ad from scratch" | `aa_create_standalone_ad` (this skill) |
+
+## Five-step flow — mirrors the dashboard wizard
+
+### Step 1: Objective
+
+Ask which objective. Options + when to pick each:
+
+- **Engagement** — likes/comments/shares on the ad creative. Good for awareness on a single piece of content.
+- **Traffic** — drive clicks to a URL (book sales page, landing page, newsletter signup). The most common objective for authors.
+- **Awareness** — maximize reach (impressions). Cheapest CPM but lowest action rate. Pick when the user explicitly says "I just want eyeballs."
+- **Video views** — optimize for ThruPlay / 15s view. Use only with video creative.
+- **Lead gen** — Meta's in-platform lead form. Skip unless the user has a CRM integration set up.
+- **Conversions** — optimize for a pixel event (purchase, signup). Requires Meta pixel installed on the destination site.
+
+Capture as `objective`. If the user is vague ("I just want more book sales"), default to **Traffic** with their book sales URL.
+
+### Step 2: Creative
+
+Capture:
+
+- `headline` — short text shown above the ad, ≤ 40 chars works best
+- `primaryText` — main body copy, the "caption" of the ad
+- `imageUrl` OR `videoUrl` — the visual. If the user has a file rather than a URL, route through the standard `aa_upload_media` flow first to get a `publicUrl`.
+- `linkUrl` — the destination URL (where the click goes). Required for Traffic/Conversions; recommended for everything except Awareness.
+- `cta` — the button label. Meta-defined enum: `LEARN_MORE`, `SHOP_NOW`, `SIGN_UP`, `DOWNLOAD`, `GET_OFFER`, `WATCH_MORE`, etc. Default `LEARN_MORE` if unsure.
+
+### Step 3: Audience
+
+Capture:
+
+- `age` — `{ min, max }`. Default `18–65` if not specified.
+- `gender` — `"all"` | `"male"` | `"female"`. Default `"all"`.
+- `geo` — list of country codes (`["US", "CA", "GB"]`) or city-level targets. Ask if not stated.
+- `interests` — use `aa_search_ad_interests({ query })` to resolve user intent ("cozy mystery readers") into Meta interest IDs. Pick 3–8 relevant ones; too few = too narrow, too many = too diffuse.
+- `advantageAudience: boolean` — Meta's auto-expansion. Default `true` for new accounts (Meta's targeting often outperforms manual constraints), `false` if the user has a strong opinion about hard constraints.
+
+### Step 4: Budget
+
+Capture:
+
+- `budgetType` — `"daily"` or `"lifetime"`. Daily is safer for new ads (caps spend per day); lifetime is fine for time-boxed launches.
+- `amount` — in dollars (or the ad account's currency). Server converts to cents.
+- `duration` — number of days the ad runs. Required for lifetime, optional for daily (but ALWAYS ask — open-ended daily ads burn money unnoticed).
+- `bidStrategy`:
+  - `LOWEST_COST_WITHOUT_CAP` — **safe default.** Meta optimizes spend with no cap.
+  - `COST_CAP` — caps cost per result. Requires `bidAmount` (max cost per result in dollars).
+  - `LOWEST_COST_WITH_BID_CAP` — caps the bid in the auction. Requires `bidAmount`.
+  - `LOWEST_COST_WITH_MIN_ROAS` — only valid for Conversions objective with purchase events. Requires `roasAverageFloor` (decimal, e.g. `2.5` = 2.5x return floor).
+
+If the user picks a strategy that needs `bidAmount` or `roasAverageFloor` and didn't supply it, ASK before proceeding.
+
+Compute **total potential spend** for the recap: `daily × duration` (or just `lifetime amount`). This is the number you echo in the confirmation.
+
+### Step 5: Review + confirm + create
+
+Recap the full ad in plain language:
+
+> "Objective: Traffic. Creative: 'Bookstore witches solve cozy crimes' with image + Learn More button → yourbook.com. Audience: women 25–55, US/CA/UK, cozy-mystery interests (8 selected). Budget: $20/day for 7 days = **$140 potential spend**. Status: paused."
+
+Then fire the AlertDialog-style confirmation:
+
+> "This will create a paused ad with up to **$140** potential spend. Type 'go' to confirm."
+
+Only if the user types "go" (or unambiguous affirmative — "yes", "confirm", "do it"), call `aa_create_standalone_ad` with:
+
+```js
+aa_create_standalone_ad({
+  profileId: "...",       // from pen-names if non-primary
+  adAccountId: "...",     // from aa_list_ad_accounts
+  objective: "TRAFFIC",
+  creative: { headline, primaryText, imageUrl, linkUrl, cta },
+  audience: { age, gender, geo, interests, advantageAudience },
+  budget: { budgetType, amount, duration, bidStrategy, bidAmount?, roasAverageFloor? },
+  status: "paused"
+})
+```
+
+### After create
+
+Tell the user:
+
+> "Created paused. Total potential spend if launched: $140. Review it in Meta Ads Manager or ask me to launch it when you're ready."
+
+Do NOT launch automatically. Launching is a separate explicit step the user takes.
+
+## Confirm before firing — spend actions
+
+- **`aa_create_standalone_ad`** — always fire the AlertDialog confirm with the dollar amount.
+- **Launching** a paused ad — separate confirm: "Launching this ad starts spending against your Meta ad account immediately, up to $X. Proceed?"
+- **Raising budget** on a live ad — confirm with the delta: "Increasing daily budget from $20 to $50 = additional $210 over the remaining 7 days. Proceed?"
+
+## Common pitfalls
+
+- **Routing a boost-post request here.** "Promote my last reel" = `boost-post` skill, NOT this one. Ask "is this a fresh ad or a boost of an existing post?" if it's ambiguous.
+- **Skipping the duration on daily budgets.** A $20/day ad with no end date is open-ended spend. Always set a duration or surface that risk.
+- **Forgetting `bidAmount` / `roasAverageFloor`.** The non-default bid strategies REQUIRE these. The API 422s without them.
+- **Auto-launching.** Always paused on create. Always.
+- **Wrong `profileId`.** Ad accounts are connected per pen name; using the wrong `profileId` either 404s the `adAccountId` or, worse, finds a matching account under the wrong identity.
+- **Vague creative.** "Buy my book" headlines underperform. Help the user write a hook ("Cozy mystery readers — meet the witches of Hollow Creek") before firing.
