@@ -27,7 +27,7 @@ In any Claude Code or Cowork session:
 /plugin install author-automations-social@author-automations
 ```
 
-This adds the conversational skills (`pen-names`, `instagram-reels`, `threads-post`, `youtube-video`, `reddit-post`, `aa-setup`, `social-post`, `social-campaign`) and the `/aa-post` and `/aa-campaign` slash commands. No connector is bundled — Step 1 already covers that.
+This adds the conversational skills (`pen-names`, `instagram-reels`, `threads-post`, `youtube-video`, `reddit-post`, `tiktok-post`, `linkedin-post`, `aa-setup`, `social-post`, `social-campaign`, `queues`, `guides-author`, `inbox-triage`, `social-analytics`, `boost-post`, `rss-publishing`, `find-something-to-post`) and the `/aa-post` and `/aa-campaign` slash commands. No connector is bundled — Step 1 already covers that.
 
 > Full step-by-step walkthrough with screenshots: **[authorautomations.social/docs/connect](https://authorautomations.social/docs/connect)**.
 
@@ -52,7 +52,7 @@ Claude reads your brand guides, writes platform-specific captions, generates med
 | Component | Triggers / Notes |
 |---|---|
 | **22 MCP tools** | `aa_list_accounts`, `aa_create_post`, `aa_create_campaign`, queue CRUD (`aa_list_queues` / `aa_create_queue` / `aa_update_queue` / `aa_delete_queue`), guide CRUD (`aa_update_guide` / `aa_rename_guide_set` / `aa_delete_guide_set`), etc. — full reference at [/docs/api](https://authorautomations.social/docs/api) |
-| **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair), `tiktok-post` (drafts, brand-partner disclosure, AI attestation), `linkedin-post` (the firstComment URL trick, PDF document posts), `queues` (per-platform + per-persona scheduling), `guides-author` (chat-edit personas + content guides) |
+| **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair), `tiktok-post` (drafts, brand-partner disclosure, AI attestation), `linkedin-post` (the firstComment URL trick, PDF document posts), `queues` (per-platform + per-persona scheduling), `guides-author` (chat-edit personas + content guides), `inbox-triage` (DMs, comments, reviews — STOS), `social-analytics` (performance + best-time — STOS), `boost-post` (paid promotion with spend gates — STOS), `rss-publishing` (auto-post from blog/feed), `find-something-to-post` (idea picker from books + feeds) |
 | **Slash commands** | `/aa-post <topic>`, `/aa-campaign <objective>` |
 
 The skills make Claude fluent in platform-specific options. Saying "schedule 8 trial reels" auto-routes through the `instagram-reels` skill which knows the right `instagramOptions.trialParams` shape.
@@ -91,6 +91,16 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 - Bugs / feature requests: [open an issue](https://github.com/chellehoniker/claude-code-author-automations/issues)
 
 ## What's new
+
+### v3.10.0 — Tier 1 user-facing skills
+
+Five new conversational skills for the most-requested workflows the plugin didn't cover yet:
+
+- `inbox-triage` — read DMs, comments, and reviews across all connected accounts. Draft replies in the user's voice (via `aa_get_guides`), show, and send only after explicit confirmation. Hide spam only on explicit user OK. STOS-only.
+- `social-analytics` — performance review across a date range (default last 7 days), top + bottom performers, per-platform breakdown, and best-time-to-post recommendations from `aa_get_best_time`. Hands off to `boost-post` when the user wants to amplify a winner. STOS-only.
+- `boost-post` — paid promotion of an already-published post on Meta ad accounts. Two non-negotiable gates: explicit post pick, then a verbatim "type 'go' to confirm" gate after showing computed total spend (daily × duration). Defaults to PAUSED state when the user is uncertain. STOS-only.
+- `rss-publishing` — subscribe a blog/feed so new items become posts. Auto-post defaults to OFF (items land as drafts). Immediate post-create poll surfaces recent items so the user sees it's working.
+- `find-something-to-post` — idea picker that pulls candidates from the user's books library and subscribed RSS feeds via `aa_find_content`. Presents 5 options, then hands off to `social-post` for drafting and scheduling.
 
 ### v3.9.1 (2026-05-23)
 
