@@ -105,3 +105,4 @@ Show what was created and when it will post.
 - If posting to TikTok, default `tiktokOptions.draft` to `false` so it publishes live (the server already handles this)
 - Use the user's timezone (ask if not known)
 - For platforms with rich options (IG/Threads/YT/Reddit), let the specialist skills do their job — they catch validation issues locally and avoid round-trips to the upstream API
+- **Link shortening is a dashboard setting, not a chat tool.** There's no `aa_*` tool to shorten URLs or set a branded short domain — those live in Settings → AI (the Link Shortener: a branded domain + auto-shorten toggles). Note that auto-shortening applies to **campaigns and templates**, not ad-hoc single posts. If a user asks to shorten links or set up a branded short domain, point them to the dashboard rather than trying to do it from chat.

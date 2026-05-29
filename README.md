@@ -92,6 +92,10 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 
 ## What's new
 
+### v3.10.1 (2026-05-29)
+
+Documents the Link Shortener. `social-post`, `social-campaign`, and `guides-author` now note that branded short domains and auto-shorten (for campaigns and templates) are configured in the dashboard's **Settings → AI** and applied automatically server-side — there's no chat tool for it, so agents point users to the dashboard instead of trying to shorten links from chat.
+
 ### v3.10.0 — Nine new user-facing skills
 
 Closes the gap between the MCP tool surface and what users can ask for in chat. Five high-frequency flows (Tier 1) plus four niche-but-useful ones (Tier 2):

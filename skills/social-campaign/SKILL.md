@@ -193,3 +193,4 @@ For ongoing branding:
 - Write image prompts that are specific and detailed
 - For video posts, describe the motion (zoom, pan, cinematic) and the music mood
 - Never talk about campaign "days" or "duration" — campaigns generate N posts; the queue handles timing
+- **Auto-shortened links are a dashboard setting.** If the user has turned on "auto-shorten campaign links" in Settings → AI (optionally with a branded short domain), URLs in the scheduled campaign captions are shortened automatically server-side at schedule time — you don't shorten them, and there's no chat tool for it. Don't be surprised if a long URL comes back shortened. If they want it on/off or a branded domain, point them to Settings → AI.
