@@ -16,7 +16,7 @@ A pen name has one or more **personas** (also called "guide sets"). Each persona
 - **copywriting_guide** — non-fiction writing rules for newsletters, blog posts, press releases, emails, marketing copy: voice + POV, formality, engagement style, language, humor, CTAs, writing samples.
 - **social_media_guide** — platform strategy, content pillars, audience targeting, hashtags, emoji style, topics to avoid.
 
-The image-style prompt is separate (one per pen name, lives on `user_ai_settings`) and isn't editable through this skill — point users at Settings → AI for that. (The Link Shortener — a branded short domain plus auto-shorten toggles for campaigns and templates — also lives in Settings → AI, not in chat.)
+The image-style prompt is separate (one per pen name, lives on `user_ai_settings`) and isn't editable through this skill — point users at Settings → AI for that. (The Link Shortener's SETUP — a branded short domain plus auto-shorten toggles for campaigns and templates — also lives in Settings → AI; once connected, `aa_shorten_link` can shorten individual URLs from chat.)
 
 ## Decision tree — when to use each tool
 

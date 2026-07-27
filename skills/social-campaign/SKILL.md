@@ -24,6 +24,9 @@ YOU write the captions — not a server-side AI. This is better because you have
 ## Campaign Flow
 
 ### Step 1: Understand the Objective
+
+**First, check for unfinished campaigns.** Call `aa_list_campaign_drafts` — it returns campaign posts that are still unscheduled (draft / ready / failed) joined to their parent campaign. If there's a stalled campaign, offer to resume it ("You have 6 unscheduled posts in *Launch Week* — want me to schedule those first?") before creating a new one.
+
 Ask:
 - What are they promoting? (book, product, service, brand)
 - How many posts? (1, 3, 7, or 14)
@@ -100,11 +103,14 @@ Poll `aa_check_media_status` every 30 seconds until complete (same `profileId` r
 Report progress: "4 of 7 images generated..."
 
 **Multi-provider routing.** The server resolves which provider to use per task type at job start, in this priority order:
-1. The post's `providerOverrides` (set in Step 4) wins for that post.
-2. The campaign's `image_provider` / `video_provider` / `music_provider` columns win next.
-3. The pen name's defaults from Settings → AI win last.
+1. A per-RUN override passed directly on `aa_generate_media` — `imageProvider` / `videoProvider` / `musicProvider` (each with an optional `imageModel` / `videoModel` / `musicModel`) — wins for this run only.
+2. The post's `providerOverrides` (set in Step 4) wins for that post.
+3. The campaign's `image_provider` / `video_provider` / `music_provider` columns win next.
+4. The pen name's defaults from Settings → AI win last.
 
-Available providers: **Magnific** (default), **fal.ai** (image/video/music — broad model catalog including SDXL, Flux, Kling, Seedance, DiffRhythm), **Google Gemini** (image only — Nano Banana, gemini-3-pro-image-preview).
+Available providers: **Pollinations**, **Magnific**, **fal.ai** (image/video/music — broad model catalog including SDXL, Flux, Kling, Seedance, DiffRhythm), **Google Gemini** (image only — Nano Banana, gemini-3-pro-image-preview).
+
+**Provider settings are a preference, not a gate.** A user with NO image key on file can still generate: pass `imageProvider: "pollinations"` to use the included tier — **12 image generations/day, no API key needed**. Pollinations video and music always require the user's own Pollinations key (only images have an included tier). If a provider run fails on a key error, offering "want me to re-run this on the included Pollinations tier?" is usually the fastest rescue.
 
 For video posts, the server automatically:
 1. Generates a still image from the imagePrompt via the resolved image provider
@@ -193,4 +199,4 @@ For ongoing branding:
 - Write image prompts that are specific and detailed
 - For video posts, describe the motion (zoom, pan, cinematic) and the music mood
 - Never talk about campaign "days" or "duration" — campaigns generate N posts; the queue handles timing
-- **Auto-shortened links are a dashboard setting.** If the user has turned on "auto-shorten campaign links" in Settings → AI (optionally with a branded short domain), URLs in the scheduled campaign captions are shortened automatically server-side at schedule time — you don't shorten them, and there's no chat tool for it. Don't be surprised if a long URL comes back shortened. If they want it on/off or a branded domain, point them to Settings → AI.
+- **Auto-shortened links are a dashboard setting.** If the user has turned on "auto-shorten campaign links" in Settings → AI (optionally with a branded short domain), URLs in the scheduled campaign captions are shortened automatically server-side at schedule time — don't be surprised if a long URL comes back shortened. If they want it on/off or a branded domain, point them to Settings → AI. For one-off manual shortening (a specific tracked link in a specific caption), `aa_shorten_link` does it from chat.

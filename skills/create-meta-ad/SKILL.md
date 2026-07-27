@@ -11,10 +11,11 @@ If the user wants to **promote an existing post** (boost it), STOP and route to 
 
 ## Quick facts
 
-- **STOS-only feature** — real spend, not in the free Cowork tier. If the user isn't on STOS, tell them and stop.
+- **Requires the ads upgrade** — a paid add-on at **$20/month**, included in every STOS plan. Callers without it get a 403; point them at authorautomations.social/pricing.
 - **Pen-name-scoped.** Every tool here takes `profileId`. Switch via `pen-names` first if a specific pen name was mentioned and carry the resolved `profileId` through every call.
 - **Defaults to PAUSED.** Always create with `status: "paused"`. The user explicitly launches afterward.
 - Confirm before `aa_create_standalone_ad` with an AlertDialog-style prompt: "This will create a paused ad with up to $X potential spend. Type 'go'."
+- **Not just Meta anymore.** `aa_create_standalone_ad` also creates on TikTok (all goals; min $20 budget; `imageUrl` may be a video URL), LinkedIn (all goals except app_promotion), Google (goals engagement/traffic/awareness/video_views; `campaignType` display|search, keywords, businessName, longHeadline; headline max 30 / body max 90 chars), and Pinterest (same 4 goals; optional boardId; headline max 100 / body max 500; $5 min). This skill's wizard is Meta-first, but the same gates (paused default, spend confirm) apply on every network. ChatGPT and Amazon social-ad accounts are reporting-only (for Amazon Sponsored Products there's a dedicated `aa_create_amazon_campaign` — always created paused, ASIN from the book's listing, never guessed).
 
 ## Decision tree
 
@@ -36,14 +37,22 @@ Ask which objective. Options + when to pick each:
 - **Traffic** — drive clicks to a URL (book sales page, landing page, newsletter signup). The most common objective for authors.
 - **Awareness** — maximize reach (impressions). Cheapest CPM but lowest action rate. Pick when the user explicitly says "I just want eyeballs."
 - **Video views** — optimize for ThruPlay / 15s view. Use only with video creative.
-- **Lead gen** — Meta's in-platform lead form. Skip unless the user has a CRM integration set up.
+- **Lead gen** — Meta's in-platform lead form. Create the form first with `aa_create_lead_form` (or pick an existing one from `aa_list_lead_forms`) and pass its id as `leadFormId`.
 - **Conversions** — optimize for a pixel event (purchase, signup). Requires Meta pixel installed on the destination site.
 
 Capture as `objective`. If the user is vague ("I just want more book sales"), default to **Traffic** with their book sales URL.
 
 ### Step 2: Creative
 
-Capture:
+**Draft with AI — the Creative Studio.** If the user doesn't have creative ready, the studio builds it (all pen-name-scoped, results land in a shared creative library):
+
+- `aa_generate_ad_copy` — hooks + body copy for a book (bookId from their library OR an inline `book` object for titles outside it), style angle (`clean` / `promotional` / `hook` / `hook-high-stakes` / `mockup` / `reviews`), 1–6 variations. Runs on the user's own text-LLM key — `ai_settings_required` / `ai_key_missing` means point them at Settings → AI Providers.
+- `aa_generate_ad_creative` — ad IMAGES: pick the style, 1–3 formats (`ad_square` 1:1, `ad_portrait` 4:5, `ad_story` 9:16), 1–6 variations per format; feed in the copy pass's hook/adBody/scenePrompt. **Images can run on the included tier — 12 generations/day — with no image-provider key on file.**
+- `aa_generate_ad_video` — short ad VIDEO (9:16 or 16:9, optional verbatim-spoken voiceoverScript, opens on the book cover by default). **User-key-only** — video is priced per second, no included tier.
+- `aa_list_ad_creatives` — browse the library (includes the included-tier allowance `{ used, limit }`); `aa_save_ad_carousel` assembles 2–10 square images into an ordered carousel for carousel placements.
+- `aa_draft_ad_campaign` — drafts a FULL campaign (validated audiences with interests checked against the live catalog, hooks, conservative budget suggestion, objective) as a reviewable draft. **Never creates an ad, never spends** — show it to the user, then build for real with `aa_create_standalone_ad` once approved.
+
+If the user brings their own creative, capture:
 
 - `headline` — short text shown above the ad, ≤ 40 chars works best
 - `primaryText` — main body copy, the "caption" of the ad
@@ -60,6 +69,8 @@ Capture:
 - `geo` — list of country codes (`["US", "CA", "GB"]`) or city-level targets. Ask if not stated.
 - `interests` — use `aa_search_ad_interests({ query })` to resolve user intent ("cozy mystery readers") into Meta interest IDs. Pick 3–8 relevant ones; too few = too narrow, too many = too diffuse.
 - `advantageAudience: boolean` — Meta's auto-expansion. Default `true` for new accounts (Meta's targeting often outperforms manual constraints), `false` if the user has a strong opinion about hard constraints.
+
+For geo/entity ids beyond plain interests (cities, regions, zips), `aa_search_ad_targeting` searches the platform's full targeting catalog. On the tool call itself: the structured `targeting` object (geoLocations, interests, places, neighborhoods, `excludedLocations: { geo, zips }`, ageMin/ageMax, genders) and `rawTargeting` (raw Meta targeting JSON) are **mutually exclusive — pass one or the other, never both (the server 422s).**
 
 ### Step 4: Budget
 

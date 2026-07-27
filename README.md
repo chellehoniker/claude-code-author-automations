@@ -45,13 +45,13 @@ Or just describe what you want:
 
 > "Post to Threads under the Book Threads topic"
 
-Claude reads your brand guides, writes platform-specific captions, generates media via your chosen AI provider (Magnific, fal.ai, or Google Gemini — set per pen name in Settings → AI), and schedules everything to your calendar or queue. You review every post before anything goes live.
+Claude reads your brand guides, writes platform-specific captions, generates media via your chosen AI provider (Pollinations, Magnific, fal.ai, or Google Gemini — set per pen name in Settings → AI; image generation includes a free 12/day tier with no API key needed), and schedules everything to your calendar or queue. You review every post before anything goes live.
 
 ## What's bundled
 
 | Component | Triggers / Notes |
 |---|---|
-| **22 MCP tools** | `aa_list_accounts`, `aa_create_post`, `aa_create_campaign`, queue CRUD (`aa_list_queues` / `aa_create_queue` / `aa_update_queue` / `aa_delete_queue`), guide CRUD (`aa_update_guide` / `aa_rename_guide_set` / `aa_delete_guide_set`), etc. — full reference at [/docs/api](https://authorautomations.social/docs/api) |
+| **281 MCP tools** (served live by the connector) | Publishing, campaigns, queues, and guides at the core (`aa_create_post`, `aa_create_campaign`, queue + guide CRUD), plus the full 2026 surface: unified inbox (DMs, comments incl. likes + private replies, reviews, automation flows), analytics (engagement, best-time, follower growth, content decay, per-platform deep dives), Media Studio (standalone image/video/audio generation with a 12/day included image tier), the unified All-Ads dashboard + Creative Studio + Amazon Ads (ads upgrade), CRM (contacts, broadcasts, sequences), Google Business Profile suite, WhatsApp suite (templates, flows, groups, numbers), account groups, per-platform validators, link shortening, and publish logs. Tool definitions update server-side — no plugin reinstall needed. Full reference at [/docs/api](https://authorautomations.social/docs/api) |
 | **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair), `tiktok-post` (drafts, brand-partner disclosure, AI attestation), `linkedin-post` (the firstComment URL trick, PDF document posts), `queues` (per-platform + per-persona scheduling), `guides-author` (chat-edit personas + content guides), `inbox-triage` (DMs, comments, reviews — STOS), `social-analytics` (performance + best-time — STOS), `boost-post` (paid promotion with spend gates — STOS), `rss-publishing` (auto-post from blog/feed), `find-something-to-post` (idea picker from books + feeds), `calendar-notes` (date annotations on the calendar), `organize-with-labels` (tag + filter posts), `comment-to-dm-automation` (auto-DM commenters — STOS), `create-meta-ad` (build a fresh Meta ad from scratch — STOS) |
 | **Slash commands** | `/aa-post <topic>`, `/aa-campaign <objective>` |
 
@@ -82,6 +82,7 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 - An active [Author Automations Social](https://authorautomations.social) subscription ($29/month or $290/year)
 - At least one connected social media account
 - Modern browser (for the OAuth authorize step)
+- **Ads features** (boost, standalone ads, unified ads dashboard, Creative Studio, Amazon Ads) require the **ads upgrade — $20/month**, included in every StorytellerOS plan
 
 ## Support
 
@@ -91,6 +92,19 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 - Bugs / feature requests: [open an issue](https://github.com/chellehoniker/claude-code-author-automations/issues)
 
 ## What's new
+
+### v3.11.0 (2026-07-27) — synced to the 281-tool MCP surface
+
+The hosted MCP server grew from ~92 to **281 tools** since the last release (Zernio contract parity + the unified ads/creative wave — all live in prod; the connector picks tool definitions up automatically). This release syncs the plugin's skills and docs to that surface:
+
+- **Entitlement model** — ads tools (boost, standalone ads, unified dashboard, Creative Studio, Amazon) now require the **ads upgrade: $20/month, purchasable from the dashboard, included in every STOS plan**. `boost-post` and `create-meta-ad` updated from the old "STOS-only" framing. Inbox and analytics remain STOS-plan features; inbox automation **flows** are free on every plan.
+- **`boost-post`** — boosting now covers Meta, TikTok, LinkedIn, Google, and Pinterest (minimums: TikTok $20/day, Pinterest $5); ChatGPT + Amazon are reporting-only. Documents the `targeting` vs `rawTargeting` mutual exclusion and `aa_search_ad_targeting` for geo lookups.
+- **`create-meta-ad`** — Creative Studio flow (`aa_generate_ad_copy` → `aa_generate_ad_creative` / `aa_generate_ad_video`, `aa_draft_ad_campaign` reviewable drafts, carousels), `aa_create_lead_form` for the Leads objective, and per-network notes for TikTok/LinkedIn/Google/Pinterest standalone ads + `aa_create_amazon_campaign`.
+- **`inbox-triage`** — comment likes (`aa_like_inbox_comment`), public-comment→private-DM replies (`aa_private_reply_inbox_comment`), conversation archiving, message edit/delete/react (per-platform support noted), and automation flows (`aa_create_flow` / `aa_activate_flow` / `aa_get_flow_runs`).
+- **`social-analytics`** — follower growth, content decay, posting frequency, Instagram demographics, LinkedIn aggregate/per-post, YouTube daily views, per-post timelines, and the all-networks ads view (`aa_list_all_ads` / `aa_get_ads_timeline`).
+- **Media generation** — `aa_generate_media` now takes per-run `imageProvider` / `videoProvider` / `musicProvider` (+ model) overrides; provider settings are a preference, not a gate — **Pollinations images run on an included 12/day tier with no API key**. `social-post` and `instagram-reels` now route standalone generation through the Media Studio (`aa_studio_generate_media`).
+- **`social-post`** — `aa_get_next_queue_slot` for "when would the queue publish this?", root-level YouTube `tags`, Discord platform options, and `aa_shorten_link` (link shortening is now a chat tool; the v3.10.1 "dashboard-only" note is superseded — setup still lives in Settings → AI).
+- **`social-campaign`** — checks `aa_list_campaign_drafts` for stalled campaigns before creating new ones.
 
 ### v3.10.1 (2026-05-29)
 

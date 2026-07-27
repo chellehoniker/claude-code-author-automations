@@ -67,6 +67,7 @@ For the platforms below WITHOUT a dedicated skill, inline the relevant `*Options
 - **Facebook draft**: `facebookOptions.draft: true` stages the post in Publishing Tools instead of publishing. Supported for Feed posts + Reels only (Stories don't have drafts). Drafts expire in ~30 days. Use when the user says "save for later," "review before publishing," or "stage for approval."
 - **Twitter long video**: `platformOptions.twitter.longVideo: true` enables X Premium's amplify_video category (up to ~10 min vs the standard 140s cap). Only set on video posts AND only if the user has an active X Premium subscription with API allowlisting. If they don't say they have Premium, leave it off.
 - **Pinterest destination link**: `platformOptions.pinterest.link: "<URL>"` sets the click-through URL for every pin. Authors almost always want this set to their book sales page or landing page — ASK if the post is going to Pinterest and the URL isn't already obvious from context.
+- **Discord**: `platformOptions.discord` — `tts` (text-to-speech), `webhookUsername` (display-name override, max 80 chars), `webhookAvatarUrl`, `crosspost` (publish to following servers — announcement channels only).
 
 The specialist skill (or your inline option) writes the right `*Options` block; you carry it through into the `aa_create_post` call.
 
@@ -77,7 +78,7 @@ Show all platform captions to the user. Ask if they want changes.
 If the post needs an image:
 - Ask if they have an image to upload
 - If uploading: use `aa_upload_media` to get a presigned URL, then PUT the file bytes to `uploadUrl` and use the `publicUrl` in the post
-- If they want AI-generated: route them through the campaign-style image flow (`aa_generate_media` on a one-day campaign — routes to the user's configured image provider: Magnific, fal.ai, or Google Gemini), then use the resulting `publicUrl` here
+- If they want AI-generated: use the **Media Studio** — `aa_studio_generate_media` generates standalone images/video/audio outside any campaign and lands the result in the shared library (`aa_list_studio_assets`; poll until `completed`, then use the asset's storage URL in `mediaItems`). Pick platform size keys (`instagram_feed`, `instagram_story`, `tiktok`, `pinterest`, …) so the aspect ratio is right by construction. Providers: Pollinations, Magnific, fal.ai, Google Gemini. **Images can run on the included tier — 12 generations/day — even with no provider key on file** (the server defaults work; provider settings are a preference, not a gate). Video/audio always need the user's own key (per-second pricing, no included tier).
 - Pass `width` and `height` on each `mediaItem` when known — the server uses this to pre-flight Instagram aspect ratios without an extra fetch
 
 ### 8. Upload egress troubleshooting
@@ -92,7 +93,7 @@ If the user reports the upload "hangs" or "doesn't work," tell them:
 Ask when to post:
 - **Now**: Set `publishNow: true`
 - **Specific time**: Set `scheduledAt` with the ISO datetime and their timezone
-- **Queue**: Suggest the web dashboard's queue feature for recurring schedules
+- **Queue**: Call `aa_get_next_queue_slot` (with `platforms` or a `queueId`) to resolve the NEXT open slot without scheduling anything, tell the user exactly when it would publish, then schedule at that time. For queue setup/cadence changes, use the `queues` skill.
 
 Call `aa_create_post` with the content, accountIds, scheduling options, and any platform `*Options` blocks the specialist skills wrote.
 
@@ -105,4 +106,5 @@ Show what was created and when it will post.
 - If posting to TikTok, default `tiktokOptions.draft` to `false` so it publishes live (the server already handles this)
 - Use the user's timezone (ask if not known)
 - For platforms with rich options (IG/Threads/YT/Reddit), let the specialist skills do their job — they catch validation issues locally and avoid round-trips to the upstream API
-- **Link shortening is a dashboard setting, not a chat tool.** There's no `aa_*` tool to shorten URLs or set a branded short domain — those live in Settings → AI (the Link Shortener: a branded domain + auto-shorten toggles). Note that auto-shortening applies to **campaigns and templates**, not ad-hoc single posts. If a user asks to shorten links or set up a branded short domain, point them to the dashboard rather than trying to do it from chat.
+- **YouTube video tags go at the post ROOT.** `aa_create_post` takes a root-level `tags` array (≤500 chars total including commas) for YouTube video tags — NOT inside `youtubeOptions`. Zernio stores them at the post root.
+- **Link shortening from chat: `aa_shorten_link`.** Shorten a URL through the user's connected link shortener before dropping it in a caption — returns `{ shortUrl, linkId, domain }`; optional `note`, `tags`, `customSlug`. If no shortener is connected, the call returns a 501 explaining how to set one up — relay that, don't retry. Setup (branded short domain + the auto-shorten toggles that apply to campaigns and templates) still lives in the dashboard's Settings → AI.

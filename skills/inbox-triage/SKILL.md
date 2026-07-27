@@ -29,6 +29,16 @@ Read incoming social activity across the user's connected accounts, draft replie
 | "Reply to that comment" | Draft → confirm → `aa_reply_inbox_comment` |
 | "Hide this spam comment" | Confirm → `aa_hide_comment` (explicit user OK only) |
 | "Reply to my reviews" / "Respond to that 1-star" | `aa_list_inbox_reviews` → draft → confirm → `aa_reply_inbox_review` |
+| "Like that comment" / "Heart her comment" | `aa_like_inbox_comment` (FB, X, Bluesky, Reddit — where it upvotes; `unlike: true` to undo) |
+| "DM whoever commented that" / "Send her the link privately" | Draft → confirm → `aa_private_reply_inbox_comment` (public comment → private DM) |
+| "Archive this conversation" / "Clear it from my inbox" | `aa_archive_conversation` (status `archived`; `active` brings it back) |
+| "Fix the typo in the message I sent" | `aa_edit_inbox_message` (TELEGRAM ONLY — other platforms don't allow edits) |
+| "Delete that message I sent" | Confirm → `aa_delete_inbox_message` (Telegram, X, Bluesky, Reddit) |
+| "React with a heart" | `aa_react_inbox_message` (Telegram + WhatsApp; `remove: true` to clear) |
+
+**Private replies (comment → DM)** are the classic "comment X and I'll DM you" move, Facebook/Instagram only. Platform rules: ONE private reply per comment, within 7 days of the comment, text message required. Draft-and-confirm like any other send.
+
+**Bluesky like quirk:** pass the comment's `cid` when liking; pass the `likeUri` (returned by the like) when unliking.
 
 ## Triage flow
 
@@ -67,6 +77,10 @@ The confirmation gate is non-negotiable. Show the draft. Ask. Wait for the user 
 
 **Never hide proactively.** Even if a comment is obvious spam, surface it: "This looks like spam ('Click here to win!') — want me to hide it?" Hide only after explicit user OK.
 
+## Automating the inbox — flows
+
+For recurring patterns ("whenever someone comments 'GUIDE', reply and DM them the link"), suggest an **inbox automation flow** instead of manual triage: `aa_list_flows` / `aa_create_flow` / `aa_update_flow` / `aa_activate_flow` / `aa_get_flow_runs`. Flows are trigger → condition → action graphs that auto-respond to comments and DMs, and they're **free on every plan**. Create as a draft, show the user the trigger + graph, and activate only on explicit OK (`aa_activate_flow` — activation validates the graph). `settings.reentry` defaults to `once` (at most one run per conversation/commenter); `always` re-triggers on every match. Debug "why didn't it fire?" with `aa_get_flow_runs` — the step-by-step walk log includes steps skipped for missing addon coverage. For the simpler Meta-only keyword→DM rules, the `comment-to-dm-automation` skill still applies.
+
 ## Reply patterns by type
 
 - **DM replies** — match the conversation's existing register. Long thoughtful DMs get long thoughtful replies; one-liners get one-liner replies. Don't over-respond to a "hi 👋" with a paragraph.
@@ -75,8 +89,10 @@ The confirmation gate is non-negotiable. Show the draft. Ask. Wait for the user 
 
 ## Confirm before firing
 
-- Before any `aa_send_inbox_message` / `aa_reply_inbox_comment` / `aa_reply_inbox_review`: show the full drafted text and the recipient/thread context. Wait for explicit approval.
+- Before any `aa_send_inbox_message` / `aa_reply_inbox_comment` / `aa_reply_inbox_review` / `aa_private_reply_inbox_comment`: show the full drafted text and the recipient/thread context. Wait for explicit approval.
 - Before `aa_hide_comment`: show the comment text and the post it's on. Wait for explicit approval.
+- Before `aa_delete_inbox_message`: show the message being deleted. Wait for explicit approval.
+- Before `aa_activate_flow`: show the trigger + graph the flow will run. Wait for explicit approval.
 
 ## Common pitfalls
 

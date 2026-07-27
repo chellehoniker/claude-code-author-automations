@@ -25,6 +25,14 @@ Pull engagement and reach numbers across the user's connected accounts, identify
 | "What's my best time to post" / "When should I post" | `aa_get_best_time` |
 | "How's my Facebook page doing" / "FB page reach" | `aa_get_facebook_page_insights` |
 | "Which platform is working best" | `aa_get_analytics` (group by platform) |
+| "How did THIS post do day by day" | `aa_get_post_timeline` (per-post daily engagement across its platform legs) |
+| "Am I gaining followers" / "follower growth" | `aa_get_follower_stats` |
+| "How fast do my posts die off" / "should I recycle content" | `aa_get_content_decay` (engagement decay after publish — informs repost cadence) |
+| "Am I posting enough" / "where are my gaps" | `aa_get_posting_frequency` (cadence per platform over time) |
+| "Who follows me on Instagram" / "IG audience age/location" | `aa_get_instagram_demographics` (complements `aa_get_instagram_account_insights`, which covers reach/engagement) |
+| "How's LinkedIn doing" / "stats on that LinkedIn post" | `aa_get_linkedin_analytics` (aggregate by default; pass a post `urn` for single-post) |
+| "YouTube views per day" | `aa_get_youtube_daily_views` (if the response includes `scopeStatus.reauthorizeUrl`, the channel needs reconnecting via that URL — relay it) |
+| "How are my ADS doing" | `aa_list_all_ads` / `aa_get_ads_timeline` — every connected ad network (Meta, Google, TikTok, LinkedIn, Pinterest, X, ChatGPT, Amazon) normalized in one call. Requires the ads upgrade ($20/mo, included in STOS plans). |
 | "Boost my best post" | This skill picks the winner → hand off to `boost-post` |
 
 ## Flow for a performance review

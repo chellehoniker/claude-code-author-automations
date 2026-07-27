@@ -5,9 +5,13 @@ description: Use when the user wants to promote (boost) an already-published pos
 
 # Boost a published post — paid promotion
 
-Take an already-published organic post and put paid spend behind it on Meta (Facebook/Instagram) ad accounts. **This is the only real-money skill in the plugin.** Treat every step as if the user's wallet were open on the desk.
+Take an already-published organic post and put paid spend behind it as an ad. **This is a real-money skill** (as is `create-meta-ad`). Treat every step as if the user's wallet were open on the desk.
 
-> **STOS-only.** Boost requires a StorytellerOS-tier subscription with a connected ad account. Non-STOS callers get a 403; in that case tell the user "Boost requires the StorytellerOS plan — upgrade at authorautomations.social/pricing."
+> **Requires the ads upgrade.** Ads tools are a paid add-on — **$20/month**, purchasable from the dashboard — and **included in every STOS plan**. Callers without it get a 403; in that case tell the user "Boosting requires the ads upgrade — $20/month at authorautomations.social/pricing (already included if you're on a StorytellerOS plan)."
+
+## Supported networks
+
+Boost works on **Meta (Facebook/Instagram), TikTok, LinkedIn, Google, and Pinterest** ad accounts. Goals vary per network; budget minimums: **TikTok $20/day, Pinterest $5**. The `adAccountId` comes from `aa_list_ad_accounts` — Google/LinkedIn/Pinterest connections may return no ad accounts, in which case boosting isn't possible for that account. **ChatGPT and Amazon ads are reporting-only** — no boost.
 
 ## Three things to know about boosting
 
@@ -53,9 +57,11 @@ Call `aa_list_ad_accounts` to show connected Meta ad accounts. If only one, use 
 Ask the user:
 - **Interests** — call `aa_search_ad_interests` against the user's keywords ("cozy mystery", "book lovers"). Show the top matches with audience size. User picks 1-3.
 - **Age range** — default 18-65 if not stated. Ask if there's a specific range.
-- **Geo** — countries or cities. Default "United States" if author is US-based and didn't say. Ask if they want international.
+- **Geo** — countries or cities. Default "United States" if author is US-based and didn't say. Ask if they want international. For city/region/zip-level geo ids beyond plain country codes, `aa_search_ad_targeting` searches the platform's full targeting catalog (geo and other entity types — `aa_search_ad_interests` covers interests only).
 
 Don't go deeper than these three on a boost — boosts aren't full campaigns. If the user wants demographic + behavioral + lookalike targeting, route them to `social-campaign` or Meta Ads Manager.
+
+**Two ways to pass targeting — never both.** The `targeting` object is structured (geoLocations, interests, places, neighborhoods, `excludedLocations: { geo: [...], zips: [...] }`, ageMin/ageMax, genders). Alternatively, `rawTargeting` takes raw Meta targeting JSON pasted verbatim. They are **mutually exclusive — the server 422s if you pass both.** Use `targeting` unless the user hands you a ready-made Meta targeting spec.
 
 ### 4. Configure budget + duration
 
