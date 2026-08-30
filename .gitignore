@@ -2,3 +2,4 @@
 # in a plugin-only repo, but keep this stub in case future tooling
 # generates side files.
 .DS_Store
+node_modules/
