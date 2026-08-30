@@ -106,5 +106,5 @@ Show what was created and when it will post.
 - If posting to TikTok, default `tiktokOptions.draft` to `false` so it publishes live (the server already handles this)
 - Use the user's timezone (ask if not known)
 - For platforms with rich options (IG/Threads/YT/Reddit), let the specialist skills do their job — they catch validation issues locally and avoid round-trips to the upstream API
-- **YouTube video tags go at the post ROOT.** `aa_create_post` takes a root-level `tags` array (≤500 chars total including commas) for YouTube video tags — NOT inside `youtubeOptions`. Zernio stores them at the post root.
+- **YouTube video tags go at the post ROOT.** `aa_create_post` takes a root-level `tags` array (≤500 chars total including commas) for YouTube video tags — NOT inside `youtubeOptions`. They are stored at the post root.
 - **Link shortening from chat: `aa_shorten_link`.** Shorten a URL through the user's connected link shortener before dropping it in a caption — returns `{ shortUrl, linkId, domain }`; optional `note`, `tags`, `customSlug`. If no shortener is connected, the call returns a 501 explaining how to set one up — relay that, don't retry. Setup (branded short domain + the auto-shorten toggles that apply to campaigns and templates) still lives in the dashboard's Settings → AI.

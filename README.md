@@ -95,7 +95,7 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 
 ### v3.11.0 (2026-07-27) — synced to the 281-tool MCP surface
 
-The hosted MCP server grew from ~92 to **281 tools** since the last release (Zernio contract parity + the unified ads/creative wave — all live in prod; the connector picks tool definitions up automatically). This release syncs the plugin's skills and docs to that surface:
+The hosted MCP server grew from ~92 to **281 tools** since the last release (upstream contract parity + the unified ads/creative wave — all live in prod; the connector picks tool definitions up automatically). This release syncs the plugin's skills and docs to that surface:
 
 - **Entitlement model** — ads tools (boost, standalone ads, unified dashboard, Creative Studio, Amazon) now require the **ads upgrade: $20/month, purchasable from the dashboard, included in every STOS plan**. `boost-post` and `create-meta-ad` updated from the old "STOS-only" framing. Inbox and analytics remain STOS-plan features; inbox automation **flows** are free on every plan.
 - **`boost-post`** — boosting now covers Meta, TikTok, LinkedIn, Google, and Pinterest (minimums: TikTok $20/day, Pinterest $5); ChatGPT + Amazon are reporting-only. Documents the `targeting` vs `rawTargeting` mutual exclusion and `aa_search_ad_targeting` for geo lookups.
@@ -131,7 +131,7 @@ Closes the gap between the MCP tool surface and what users can ask for in chat. 
 
 ### v3.9.1 (2026-05-23)
 
-- **Pen-name correctness for the campaign + post lifecycle.** Six MCP tools (`aa_save_campaign_plan`, `aa_generate_media`, `aa_check_media_status`, `aa_schedule_campaign`, `aa_update_post`, `aa_delete_post`) previously had no `profileId` parameter, so calls against campaigns or posts on a non-primary pen name silently scoped to the user's primary profile and 404'd "Campaign not found" / "Post not found." Server side: each route already gated correctly on `zernio_profile_id`, so there was zero cross-tenant write — the failure was fail-safe, not a tenancy leak. Now every campaign-lifecycle and post-lifecycle tool accepts `profileId`; the `pen-names` skill lists all 13 profile-scoped tools and the `social-campaign` skill threads `profileId` through every step of the build sequence.
+- **Pen-name correctness for the campaign + post lifecycle.** Six MCP tools (`aa_save_campaign_plan`, `aa_generate_media`, `aa_check_media_status`, `aa_schedule_campaign`, `aa_update_post`, `aa_delete_post`) previously had no `profileId` parameter, so calls against campaigns or posts on a non-primary pen name silently scoped to the user's primary profile and 404'd "Campaign not found" / "Post not found." Server side: each route already gated correctly on the stored profile id, so there was zero cross-tenant write — the failure was fail-safe, not a tenancy leak. Now every campaign-lifecycle and post-lifecycle tool accepts `profileId`; the `pen-names` skill lists all 13 profile-scoped tools and the `social-campaign` skill threads `profileId` through every step of the build sequence.
 
 ### v3.9.0 (2026-05-14)
 
