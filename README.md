@@ -53,7 +53,7 @@ Claude reads your brand guides, writes platform-specific captions, generates med
 
 | Component | Triggers / Notes |
 |---|---|
-| **281 MCP tools** (served live by the connector) | Publishing, campaigns, queues, and guides at the core (`aa_create_post`, `aa_create_campaign`, queue + guide CRUD), plus the full 2026 surface: unified inbox (DMs, comments incl. likes + private replies, reviews, automation flows), analytics (engagement, best-time, follower growth, content decay, per-platform deep dives), Media Studio (standalone image/video/audio generation with a 12/day included image tier), the unified All-Ads dashboard + Creative Studio + Amazon Ads (ads upgrade), CRM (contacts, broadcasts, sequences), Google Business Profile suite, WhatsApp suite (templates, flows, groups, numbers), account groups, per-platform validators, link shortening, and publish logs. Tool definitions update server-side — no plugin reinstall needed. Full reference at [/docs/api](https://authorautomations.social/docs/api) |
+| **301 MCP tools** (served live by the connector) | Publishing, campaigns, queues, and guides at the core (`aa_create_post`, `aa_create_campaign`, queue + guide CRUD), plus the full 2026 surface: unified inbox (DMs, comments incl. likes + private replies, reviews, automation flows), analytics (engagement, best-time, follower growth, content decay, per-platform deep dives), Media Studio (standalone image/video/audio generation with a 12/day included image tier), the unified All-Ads dashboard + Creative Studio + Amazon Ads (ads upgrade), CRM (contacts, broadcasts, sequences), Google Business Profile suite, WhatsApp suite (templates, flows, groups, numbers), account groups, per-platform validators, link shortening, and publish logs. Tool definitions update server-side — no plugin reinstall needed. Full reference at [/docs/api](https://authorautomations.social/docs/api) |
 | **Skills** (markdown chat guides) | `aa-setup`, `pen-names` (switch between author identities), `social-post`, `social-campaign`, `instagram-reels` (Trial Reels + covers), `threads-post` (topic tags + chains), `youtube-video` (titles + Shorts), `reddit-post` (subreddit + flair), `tiktok-post` (drafts, brand-partner disclosure, AI attestation), `linkedin-post` (the firstComment URL trick, PDF document posts), `queues` (per-platform + per-persona scheduling), `guides-author` (chat-edit personas + content guides), `inbox-triage` (DMs, comments, reviews — STOS), `social-analytics` (performance + best-time — STOS), `boost-post` (paid promotion with spend gates — STOS), `rss-publishing` (auto-post from blog/feed), `find-something-to-post` (idea picker from books + feeds), `calendar-notes` (date annotations on the calendar), `organize-with-labels` (tag + filter posts), `comment-to-dm-automation` (auto-DM commenters — STOS), `create-meta-ad` (build a fresh Meta ad from scratch — STOS) |
 | **Slash commands** | `/aa-post <topic>`, `/aa-campaign <objective>` |
 
@@ -94,6 +94,10 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 - Bugs / feature requests: [open an issue](https://github.com/chellehoniker/claude-code-author-automations/issues)
 
 ## What's new
+
+### v3.12.0 (2026-09-05) — synced to the 301-tool MCP surface
+
+The hosted MCP grew to **301 tools**. New in this sync: the wizard-era campaign shape (post counts instead of day slots, per-platform options, recipe-guided carousels with the real-cover closer), the book reference library (`aa_*` tools for labeled reference docs — quotes, scenes, character notes — that ground campaign generation), media folders and asset management (`aa_list_media_folders`, `aa_create_media_folder`, `aa_delete_media_folder`, `aa_update_studio_asset`, `aa_delete_studio_asset`), and video-studio provenance on campaign media. Tool definitions load server-side, so existing installs pick all of this up with no reinstall.
 
 ### v3.11.0 (2026-07-27) — synced to the 281-tool MCP surface
 
