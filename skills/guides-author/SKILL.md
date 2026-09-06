@@ -9,12 +9,13 @@ Guides are the user's brand voice. Every campaign, post, and AI-written caption 
 
 ## The model in one paragraph
 
-A pen name has one or more **personas** (also called "guide sets"). Each persona has a user-defined `tag` name (`primary`, `Cozy Mystery`, `Spicy Romance Series`, etc.) and exactly one persona is marked the **default** (the fallback when a generation doesn't specify a tag). Each persona carries **four guides**, each a long block of free-form text:
+A pen name has one or more **personas** (also called "guide sets"). Each persona has a user-defined `tag` name (`primary`, `Cozy Mystery`, `Spicy Romance Series`, etc.) and exactly one persona is marked the **default** (the fallback when a generation doesn't specify a tag). Each persona carries **five guides**, each a long block of free-form text:
 
 - **brand_guide** — author identity: pen name, genres, target audience, taglines, mission, personality keywords, voice + tone, visual identity, bio.
 - **prose_guide** — fiction writing rules: narrative tone, sentence rhythm, dialogue style, description, pacing, character voice, tension, romance conventions, magic system (if applicable), word choice, punctuation, scene examples.
 - **copywriting_guide** — non-fiction writing rules for newsletters, blog posts, press releases, emails, marketing copy: voice + POV, formality, engagement style, language, humor, CTAs, writing samples.
 - **social_media_guide** — platform strategy, content pillars, audience targeting, hashtags, emoji style, topics to avoid.
+- **image_style_prompt** — the persona's IMAGE STYLE GUIDE: the visual brand look (medium, palette, lighting, mood) that grounds every AI image generated for campaigns using this persona. At generation time it's distilled into a short "style capsule"; the campaign wizard's Brand Look card edits it inline. There is deliberately NO account-level image style document — each persona owns its look, so one pen name's lantern-lit cozy aesthetic never bleeds into another's. An EMPTY guide is meaningful: that persona generates with no style suffix at all.
 
 The image-style prompt is separate (one per pen name, lives on `user_ai_settings`) and isn't editable through this skill — point users at Settings → AI for that. (The Link Shortener's SETUP — a branded short domain plus auto-shorten toggles for campaigns and templates — also lives in Settings → AI; once connected, `aa_shorten_link` can shorten individual URLs from chat.)
 
@@ -35,7 +36,7 @@ Guide content is LONG (a full prose guide can run 400+ lines). Never silently re
 
 ### 1. Read the current guide
 
-`aa_get_guides({ tag })` returns the four guides plus the persona name. Read the relevant guide(s) to ground yourself in the user's actual voice — don't generate from scratch.
+`aa_get_guides({ tag })` returns the five guides plus the persona name. Read the relevant guide(s) to ground yourself in the user's actual voice — don't generate from scratch.
 
 ### 2. Identify the section the user wants to change
 

@@ -58,24 +58,51 @@ Call `aa_create_campaign` with:
 {
   "name": "Campaign name",
   "objective": "What they told you",
+  "objective_kind": "launch",
   "post_count": 7,
   "platforms": ["instagram", "tiktok", "facebook"],
-  "content_mix": "mixed",
+  "media_kind": "carousel",
+  "variety": "balanced",
+  "book_id": "…",
+  "carousel_slide_count": 5,
+  "carousel_image_strategy": "single_repeated",
+  "carousel_recipes": ["quote_dialogue", "trope_card"],
   "guideTag": "Cozy Mystery Series"
 }
 ```
 
-`post_count` is how many posts the campaign generates (1, 3, 7, or 14). `guideTag` is optional — omit it (or pass null) to use the user's default persona. When set, the server-side AI campaign-builder reads that persona's guides for every generation in this campaign and stores the choice on the campaign row so regenerations stay on the same voice.
+`post_count` is how many posts the campaign generates **per platform** (1, 3, 7, or 14). `guideTag` is optional — omit it (or pass null) to use the user's default persona. When set, the server-side AI campaign-builder reads that persona's guides for every generation in this campaign and stores the choice on the campaign row so regenerations stay on the same voice.
+
+The newer shaping fields (all optional):
+- **objective_kind** — what the campaign is FOR: `prelaunch` | `launch` | `sale` | `backlist` | `reader_list` | `meet_author` | `characters_world` | `other`. Drives caption arc, tone, and CTA style; the free-text `objective` carries the specifics.
+- **media_kind** — `image` | `video` | `carousel`. A batch is ONE kind; run separate batches for separate kinds. Overrides `content_mix`.
+- **variety** — `signature` (tight, on-brand scenes) | `balanced` | `wide` (maximum scene range).
+- **book_id** — anchors the campaign to a book: cover, blurb, reviews, AND the book's **reference library** (see below) flow into generation automatically.
+- **carousel_image_strategy** — `single_repeated` (one background image, the panel TEXT changes per swipe — the typography-led default, one image spend) or `per_slide` (a fresh image every panel — character reveals, world tours).
+- **carousel_recipes** — which proven formats the batch builds around: `quote_dialogue`, `pov_hook`, `trope_card`, `character_reveals`. Pick several and the batch spreads across them; omit for a mix of all four. Every carousel ends on a CTA panel — the book's REAL cover composed on a blurred atmosphere when a book is attached (no AI spend, no mangled cover).
+
+To change any of these later (or scope the book-doc selection), call `aa_update_campaign` with a `fields` map.
+
+### Step 3.5: Ground it in the book's reference library
+
+Every book carries a **reference library** — labeled documents the author saved once and every campaign reuses:
+
+- `aa_list_book_reference_docs({ bookId })` — see what exists.
+- `aa_add_book_reference_doc({ bookId, label, kind, content })` — save new material directly as text. `kind` decides HOW generation uses it: **quotes** are used VERBATIM in captions/slide text and outrank invention; **scenes** ground image prompts in real settings; **characters** keep names/traits accurate (and feed the character-reveals carousel recipe); **world** drives atmosphere; **voice** is absorbed into caption voice but never quoted; **other** is supporting context.
+- Campaigns attached to the book use the WHOLE library by default (future uploads ride along). Scope one campaign with `aa_update_campaign({ campaignId, fields: { reference_doc_ids: ["…"] } })`; `[]` means none.
+
+If the user pastes quotes, an excerpt, or character notes in chat, offer to SAVE them to the book's library (so every future campaign benefits) rather than using them once.
 
 ### Step 4: Write the Content Plan
 Create the full plan yourself. For each post, write:
 - **theme**: Brief description of the post's content angle
 - **captions**: A UNIQUE caption for EACH platform (see platform rules below)
 - **imagePrompt**: Detailed description for AI image generation
+- **Carousel image prompts are WORDLESS BACKDROPS.** The panel's words live in the slide text and are typeset by the app in real fonts (spelling guaranteed) — an image model asked to paint words produces garbled lettering. Each slide's image prompt must be a concrete visual scene (place, object, light, atmosphere), never a structural label like "a closing composition that reinforces the hook". The dashboard's panel editor handles fonts, colors, size, placement, text-background pills, and corner badges (e.g. a Kindle Unlimited stamp).
 - For carousels: **slideConfigs** (preferred) — array of `{ prompt, overlay? }` per slide. Each slide can carry its own short text overlay (`overlay.text`, `overlay.position` = `top|center|bottom`, `overlay.style` for an FFmpeg drawtext preset). Plan 3–10 slides telling a visual story; the dashboard's slide-count picker drives `scene_count` on the campaign.
   - Back-compat: `imagePrompts` (string array) still works — the server pads/trims to the requested slide count, but you lose per-slide overlays. Prefer `slideConfigs`.
   - Carousel strategy: by default each carousel post gets the full slide stack. For `single_repeated` carousels (one base image with the text overlays carrying the content), set `carouselImageStrategy: "single_repeated"` on the campaign and provide a single `imagePrompt` plus a `slideTexts` array — don't fake it with a one-slide carousel.
-- For videos: **videoPrompt** (camera motion) + **musicPrompt** (audio mood) + **videoDuration** (5/10/20/30/60 s; >10s chains multiple FFmpeg-concat'd clips). Music caps at 30s per clip and FFmpeg loops it under longer videos automatically.
+- For videos: **videoPrompt** (the camera move — sent to the video engine as a labeled CINEMATOGRAPHY instruction, so describe MOTION, never new things to put in the scene; an unframed "camera orbits" can get rendered as a person holding a camera) + **musicPrompt** (audio mood) + **videoDuration** (5/10/20/30/60 s; >10s chains multiple FFmpeg-concat'd clips). Music caps at 30s per clip and FFmpeg loops it under longer videos automatically.
 - **contentType**: "image", "carousel", or "video"
 - **providerOverrides** (optional): per-post generator override shaped `{ image?: { provider, model }, video?: {...}, music?: {...} }`. Wins over the campaign-level + pen-name defaults. Use when one or two posts deserve a different model — e.g., default to fal.ai/SDXL for cost but use Gemini's `gemini-3-pro-image-preview` for the cover-reveal post.
 
@@ -108,7 +135,7 @@ Report progress: "4 of 7 images generated..."
 3. The campaign's `image_provider` / `video_provider` / `music_provider` columns win next.
 4. The pen name's defaults from Settings → AI win last.
 
-Available providers: **Pollinations**, **Magnific**, **fal.ai** (image/video/music — broad model catalog including SDXL, Flux, Kling, Seedance, DiffRhythm), **Google Gemini** (image only — Nano Banana, gemini-3-pro-image-preview).
+Available providers: **Pollinations** (image works with NO key — included daily tier; video/music need the user's own key), **Magnific**, **fal.ai** (image/video/music — broad model catalog including SDXL, Flux, Kling, Seedance, DiffRhythm), **Google Gemini** (image = Nano Banana, video = Veo, music = Lyria 3 — one key covers all three). Generated images are normalized server-side to their exact requested dimensions, so no model's native output size ever fails a platform's validation.
 
 **Provider settings are a preference, not a gate.** A user with NO image key on file can still generate: pass `imageProvider: "pollinations"` to use the included tier — **12 image generations/day, no API key needed**. Pollinations video and music always require the user's own Pollinations key (only images have an included tier). If a provider run fails on a key error, offering "want me to re-run this on the included Pollinations tier?" is usually the fastest rescue.
 
@@ -127,6 +154,8 @@ The user will see the complete video with music in the finalize/review step. Vid
 - Upload their own media for that post.
 
 When polling and reporting progress, surface the `last_error` for any failed post so the user knows which posts need attention rather than waiting for the whole batch to drag on retries.
+
+**Regenerating specific posts:** pass `postIds` to `aa_generate_media` — explicitly named posts regenerate even when already READY (useful after a prompt tweak or to try a different engine via the provider override params). Each post records which provider/model actually made its image and video, so the dashboard shows "Made with …" per post.
 
 ### Step 8: Schedule
 There is only one scheduling mode: the posts drop into the user's **per-platform queues**, and each queue decides when its posts publish. There is no campaign start date and no per-post times — if the user asks for those, explain that timing lives in their queue settings (`aa_list_queues` / `aa_update_queue`, or the dashboard's Queue page).

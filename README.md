@@ -47,6 +47,8 @@ Or just describe what you want:
 
 Claude reads your brand guides, writes platform-specific captions, generates media via your chosen AI provider (Pollinations, Magnific, fal.ai, or Google Gemini — set per pen name in Settings → AI; image generation includes a free 12/day tier with no API key needed), and schedules everything to your calendar or queue. You review every post before anything goes live.
 
+**New in 3.12:** book **reference libraries** (save labeled quotes, scenes, and character sketches to a book once — every campaign uses them: real quotes verbatim, never invented), **carousel recipes** (quote & dialogue, POV hooks, trope cards, character reveals — with your real book cover as the closing CTA panel), campaign **objective kinds** and a scene-**variety** dial, per-persona **image style guides**, and regeneration of specific posts even after they're ready.
+
 ## What's bundled
 
 | Component | Triggers / Notes |
