@@ -1,13 +1,14 @@
 {
   "name": "author-automations-social",
-  "version": "3.12.0",
-  "description": "Skills and slash commands for Author Automations Social. Pairs with the manually-added Author Automations connector at https://authorautomations.social/api/mcp. Supports 15 platforms including Instagram (Trial Reels), TikTok, Threads (topic chains), YouTube Shorts, and more.",
+  "displayName": "Reader Radius",
+  "version": "3.13.1",
+  "description": "Reader Radius skills and slash commands for author marketing, social posts, campaigns, and analytics. Pairs with your existing MCP connector; existing credential pairs and connections remain unchanged.",
   "author": {
     "name": "Author Automations",
     "email": "support@authorautomations.com",
     "url": "https://authorautomations.social"
   },
-  "homepage": "https://authorautomations.social/docs/connect",
+  "homepage": "https://readerradius.com/docs/connect",
   "repository": "https://github.com/chellehoniker/claude-code-author-automations",
   "license": "MIT",
   "keywords": [

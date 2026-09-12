@@ -1,0 +1,25 @@
+{
+  "name": "author-automations-social",
+  "version": "3.13.1",
+  "description": "Reader Radius skills for author marketing, social posts, campaigns, and analytics. Uses your existing MCP connection.",
+  "author": {
+    "name": "Author Automations",
+    "email": "support@authorautomations.com"
+  },
+  "homepage": "https://readerradius.com/docs/connect",
+  "repository": "https://github.com/chellehoniker/claude-code-author-automations",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Reader Radius",
+    "shortDescription": "Author marketing, campaigns, and social publishing",
+    "longDescription": "Reader Radius helps authors plan campaigns, prepare platform-specific posts, manage content, and review analytics through their existing Reader Radius MCP connection. Credential-pair permissions continue to control pen-name access.",
+    "developerName": "Author Automations",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://readerradius.com",
+    "privacyPolicyURL": "https://readerradius.com/privacy",
+    "termsOfServiceURL": "https://readerradius.com/terms",
+    "defaultPrompt": ["Show the pen names I can access in Reader Radius."]
+  }
+}

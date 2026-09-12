@@ -1,4 +1,6 @@
-# Author Automations Social — Claude Plugin
+# Reader Radius — Claude and ChatGPT Plugin
+
+**New in 3.13.1:** Reader Radius is the display name in Claude and ChatGPT. The internal `author-automations-social` plugin ID and `author-automations` marketplace ID are intentionally unchanged, so existing installations, command namespaces, and separately configured MCP connections remain compatible. Update the plugin to receive the new branding; older clients without display-name support may still show the internal ID. No new credentials or connector setup is required.
 
 Schedule social posts, run AI campaigns, and manage your content calendar from Claude Code or Claude Cowork — across **15 platforms** including Instagram (Trial Reels, Stories, feed carousels), TikTok (with auto trending music), Threads (topic chains), YouTube Shorts, Facebook, LinkedIn, X, Pinterest, Reddit, Bluesky, Snapchat, Telegram, Google Business, WhatsApp, and Discord.
 
@@ -10,7 +12,7 @@ The plugin ships **skills and slash commands**. The MCP connector itself is adde
 
 In Cowork (or Claude Desktop): **Settings → Connectors → Add custom connector**
 
-- **Name:** `Author Automations`
+- **Name:** `Reader Radius` (existing connector names can remain unchanged)
 - **Remote MCP server URL:** `https://authorautomations.social/api/mcp`
 - **Advanced settings → OAuth Client ID:** generate at [authorautomations.social/dashboard/settings](https://authorautomations.social/dashboard/settings) → **Claude Connector** card → **Generate credential pair** → copy the value starting with `aacw_`
 - **Advanced settings → OAuth Client Secret:** the value starting with `aacs_` (shown once, copy carefully)

@@ -5,13 +5,13 @@
     "email": "support@authorautomations.com",
     "url": "https://authorautomations.social"
   },
-  "description": "Claude plugins for indie authors. Connect your Author Automations Social account and run everything through Claude — posts, campaigns, scheduling, book-anchored templates.",
+  "description": "Reader Radius plugins for indie authors — posts, campaigns, scheduling, and book-anchored templates.",
   "plugins": [
     {
       "name": "author-automations-social",
       "source": "./",
-      "description": "Schedule social posts, run AI campaigns, and manage your content calendar across 15 platforms — Trial Reels, Threads chains, YouTube Shorts, the lot. Bundled remote MCP server (no install). Pairs with an Author Automations Social subscription.",
-      "version": "3.13.0"
+      "description": "Reader Radius: schedule social posts, run AI campaigns, and manage your content calendar across 15 platforms. Skills and slash commands pair with your separately connected MCP server and existing Reader Radius subscription.",
+      "version": "3.13.1"
     }
   ]
 }
