@@ -81,6 +81,11 @@ Cowork's marketplace cache hasn't caught up. Three-dot menu on the marketplace (
 ### "Tools worked yesterday, not today"
 Most likely the user revoked the credential pair from the dashboard. Walk them through Step 2.
 
+### "One platform stopped working but the rest are fine"
+That's a per-account token problem, not a connector problem, and it has its own diagnosis. Call `aa_get_accounts_health` (or `aa_get_account_health` for a single account you already have the id for). It returns token validity, whether the account needs reconnecting, whether it can still post, granted versus missing OAuth scopes, and plain recommendations. That is the right answer to "why is TikTok returning no analytics" or "why did my Facebook post fail".
+
+The dashboard shows the same thing as a badge on each account card, with a Reconnect button and a count of how many accounts need reconnecting. Reconnecting is a browser step the user takes, and the one thing to tell them is: **leave every permission box ticked**. A half-granted reconnect looks connected and then fails on the feature whose scope they dropped.
+
 ### "Upload step hangs / image upload fails"
 The upload PUT goes directly to a storage CDN. Tell the user to enable **Settings → Capabilities → Allow Network Egress → All Domains** in Cowork. The CDN uses subdomain-per-bucket, so single-domain allowlists don't catch it.
 

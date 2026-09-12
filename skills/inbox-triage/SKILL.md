@@ -1,6 +1,6 @@
 ---
 name: inbox-triage
-description: Use when the user wants to read or respond to incoming social activity — DMs, comments on their posts, or reviews. Triggers on "reply to my DMs", "check my comments", "triage my inbox", "what's in my inbox", "answer my messages", "respond to comments".
+description: Use when the user wants to read or respond to incoming social activity — DMs, comments on their posts, or reviews. Triggers on "reply to my DMs", "check my comments", "triage my inbox", "what's in my inbox", "answer my messages", "respond to comments", "pin that comment", "pin a comment on TikTok", "hide this comment", "reply to my reviews".
 ---
 
 # Inbox triage — DMs, comments, and reviews
@@ -35,10 +35,23 @@ Read incoming social activity across the user's connected accounts, draft replie
 | "Fix the typo in the message I sent" | `aa_edit_inbox_message` (TELEGRAM ONLY — other platforms don't allow edits) |
 | "Delete that message I sent" | Confirm → `aa_delete_inbox_message` (Telegram, X, Bluesky, Reddit) |
 | "React with a heart" | `aa_react_inbox_message` (Telegram + WhatsApp; `remove: true` to clear) |
+| "Pin that comment to the top" | `aa_pin_inbox_comment` (TikTok only; top-level comments; `unpin: true` to remove the pin) |
 
-**Private replies (comment → DM)** are the classic "comment X and I'll DM you" move, Facebook/Instagram only. Platform rules: ONE private reply per comment, within 7 days of the comment, text message required. Draft-and-confirm like any other send.
+**Private replies (comment → DM)** are the classic "comment X and I'll DM you" move, Facebook/Instagram only. Platform rules: ONE private reply per comment, within 7 days of the comment, text message required. Draft-and-confirm like any other send. **TikTok has no private reply at all**; it is a Meta mechanism. On TikTok, reply publicly or pin the comment instead.
+
+**Pinning a comment** (`aa_pin_inbox_comment`) is TikTok-only today, and only top-level comments can be pinned. It is the TikTok answer to "I want everyone to see this one": pin the reader question the author just answered well, or the review they want at the top of the thread. Pass `unpin: true` to take it back down. Pinning is public and reversible, so it needs a light confirm rather than the full spend-style gate, but still say which comment you're about to pin.
 
 **Bluesky like quirk:** pass the comment's `cid` when liking; pass the `likeUri` (returned by the like) when unliking.
+
+## TikTok inbox rules
+
+TikTok's inbox works, but it is the most constrained platform in here, and the constraints are the platform's, not ours. The account has to be connected through **TikTok for Business** for comments and DMs to appear at all.
+
+**Comments:** reply, like, hide/unhide, delete your own, and pin/unpin a top-level comment. No private reply.
+
+**DMs:** reply-only. A business can never open a TikTok conversation, so there is no "DM this reader out of the blue" on TikTok. After the reader's last message, TikTok accepts up to **10 messages within 48 hours**. One message is **either** text (up to **6,000 characters**) **or** one JPG/PNG image (up to **3 MB**), never both. Meta rich-reply fields (buttons, quick replies, templates, message tags) are dropped on TikTok, so don't build a reply around them.
+
+Practically: if a TikTok thread has gone quiet for more than two days, the window is shut and the author cannot reopen it. Tell them that plainly instead of drafting a reply that will fail.
 
 ## Triage flow
 

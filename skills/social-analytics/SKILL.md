@@ -33,6 +33,7 @@ Pull engagement and reach numbers across the user's connected accounts, identify
 | "How's LinkedIn doing" / "stats on that LinkedIn post" | `aa_get_linkedin_analytics` (aggregate by default; pass a post `urn` for single-post) |
 | "YouTube views per day" | `aa_get_youtube_daily_views` (if the response includes `scopeStatus.reauthorizeUrl`, the channel needs reconnecting via that URL — relay it) |
 | "How are my ADS doing" | `aa_list_all_ads` / `aa_get_ads_timeline` — every connected ad network (Meta, Google, TikTok, LinkedIn, Pinterest, X, ChatGPT, Amazon) normalized in one call. Requires the ads upgrade ($20/mo, included in STOS plans). |
+| "Is the launch working?" / "How did that book's ads do overall" | `aa_ads_groups_rollup`: spend, revenue, ROAS, CPC and a verdict (`winning` / `watch` / `losing` / `too_early` / `no_data`) per campaign group, across every network at once, plus an Ungrouped bucket with suggestions. `window` is `7d`, `30d` (default), `90d` or `lifetime`. Verdicts hold off for seven days and judge against the author's own target first, so report `too_early` as `too_early` rather than reading tea leaves. Group setup lives in the `create-meta-ad` skill. |
 | "Boost my best post" | This skill picks the winner → hand off to `boost-post` |
 
 ## Flow for a performance review

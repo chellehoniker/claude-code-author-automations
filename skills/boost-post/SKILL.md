@@ -11,7 +11,9 @@ Take an already-published organic post and put paid spend behind it as an ad. **
 
 ## Supported networks
 
-Boost works on **Meta (Facebook/Instagram), TikTok, LinkedIn, Google, and Pinterest** ad accounts. Goals vary per network; budget minimums: **TikTok $20/day, Pinterest $5**. The `adAccountId` comes from `aa_list_ad_accounts` — Google/LinkedIn/Pinterest connections may return no ad accounts, in which case boosting isn't possible for that account. **ChatGPT and Amazon ads are reporting-only** — no boost.
+Boost works on **Meta (Facebook/Instagram), TikTok, LinkedIn, Google, and Pinterest** ad accounts. Goals vary per network; budget minimums: **TikTok $20/day, Pinterest $5**. The `adAccountId` comes from `aa_list_ad_accounts` — Google/LinkedIn/Pinterest connections may return no ad accounts, in which case boosting isn't possible for that account.
+
+**ChatGPT and Amazon can't be boosted**, because neither has an organic post to put money behind. They are still fully advertisable: both are destinations in the dashboard's one **Create ad** wizard at `/dashboard/ads/create` (goal first, then destinations, progress saved so a half-built ad resumes), and Amazon also has a dedicated chat path in the `create-meta-ad` skill (`aa_create_amazon_campaign`, then `aa_amazon_ads_campaign_state` to start it). Whichever route the author takes, campaigns are created **paused** and started **in-app**, either with that tool or the wizard's **Start these ads** button. Never point an author at a network's own ad console to switch something on.
 
 ## Three things to know about boosting
 
@@ -30,6 +32,7 @@ Boost works on **Meta (Facebook/Instagram), TikTok, LinkedIn, Google, and Pinter
 | "Promote the launch post" | `aa_list_posts` filtered by recency or caption keyword → confirm pick |
 | "Run an ad on Curses and Currents" | This isn't a boost — that's a fresh campaign. Use `social-campaign` or hand off to Meta Ads Manager. |
 | "Boost to people interested in cozy mystery" | After post pick: `aa_search_ad_interests` for targeting |
+| "Is the boost working?" / "How is the whole launch doing?" | `aa_ads_groups_rollup` for the cross-network verdict (put the boost in a group first with `aa_ads_groups_create` + `aa_ads_groups_assign`); see `create-meta-ad` for the group tools |
 
 ## Flow
 

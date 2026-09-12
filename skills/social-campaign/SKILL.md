@@ -74,7 +74,13 @@ Call `aa_create_campaign` with:
 `post_count` is how many posts the campaign generates **per platform** (1, 3, 7, or 14). `guideTag` is optional — omit it (or pass null) to use the user's default persona. When set, the server-side AI campaign-builder reads that persona's guides for every generation in this campaign and stores the choice on the campaign row so regenerations stay on the same voice.
 
 The newer shaping fields (all optional):
-- **objective_kind** — what the campaign is FOR: `prelaunch` | `launch` | `sale` | `backlist` | `reader_list` | `meet_author` | `characters_world` | `other`. Drives caption arc, tone, and CTA style; the free-text `objective` carries the specifics.
+- **objective_kind** — what the campaign is FOR. It drives caption arc, tone, and CTA style; the free-text `objective` carries the specifics (the date, the link, the deal).
+
+  **Fiction and general:** `prelaunch` | `launch` | `sale` | `backlist` | `reader_list` | `meet_author` | `characters_world` | `other`. These eight are the values `aa_create_campaign` accepts directly.
+
+  **Nonfiction and expertise (six newer values):** `sell_book` (sell the nonfiction book on its real promise), `teach_concept` (one useful idea readers can apply), `establish_authority` (depth of thinking through accurate, useful insight), `lead_magnet` (teach something useful, then invite the deeper resource), `promote_course_service` (connect a reader problem to the help on offer), `speaking_events` (a talk, workshop, signing or appearance).
+
+  **How to set the six newer ones.** `aa_create_campaign` still validates `objective_kind` against the original eight, so passing `teach_concept` there is rejected before the request leaves. Create the campaign with the closest fit (or leave `objective_kind` out entirely), then set the real value with `aa_update_campaign({ campaignId, fields: { objective_kind: "teach_concept" } })` before generating the plan. The dashboard's objective gallery offers all fourteen directly. Every nonfiction objective carries a grounding rule with it: claims come from the supplied material or the author's own objective text, and credentials, results, statistics, testimonials and client outcomes are never invented. Honor that in anything you draft.
 - **media_kind** — `image` | `video` | `carousel`. A batch is ONE kind; run separate batches for separate kinds. Overrides `content_mix`.
 - **variety** — `signature` (tight, on-brand scenes) | `balanced` | `wide` (maximum scene range).
 - **book_id** — anchors the campaign to a book: cover, blurb, reviews, AND the book's **reference library** (see below) flow into generation automatically.
@@ -155,7 +161,20 @@ The user will see the complete video with music in the finalize/review step. Vid
 
 When polling and reporting progress, surface the `last_error` for any failed post so the user knows which posts need attention rather than waiting for the whole batch to drag on retries.
 
-**Regenerating specific posts:** pass `postIds` to `aa_generate_media` — explicitly named posts regenerate even when already READY (useful after a prompt tweak or to try a different engine via the provider override params). Each post records which provider/model actually made its image and video, so the dashboard shows "Made with …" per post.
+**Regenerating specific posts:** pass `postIds` to `aa_generate_media` — explicitly named posts regenerate even when already READY (useful after a prompt tweak or to try a different engine via the provider override params). Each post records which provider/model actually made its image and video, so the dashboard shows "Made with …" per post. Finer-grained reruns (one slide of a carousel, or filling in only the panels that came back missing) are dashboard affordances on the post card; they are not parameters on the chat tool, so route those requests to the dashboard rather than inventing arguments.
+
+### Step 7.5: Turning a carousel deck into a video (dashboard)
+
+Once a carousel's panels are approved, the author can publish that post as a **single video built from the panels** instead of a swipeable deck. There is no chat tool for this: it lives on the post's carousel editor in the dashboard, under "Turn these slides into a video".
+
+What to tell an author who asks for it:
+
+- It is a **choice, not an addition**. The post publishes as the video and the slides stop being what ships. Unticking the box goes back to the carousel, so nothing is lost.
+- It is **per post**. One carousel in a batch can go out as a video while the rest stay swipeable.
+- Panels default to **5 seconds each** (adjustable, 1 to 15), so a five-panel deck becomes a 25-second video.
+- **Music is optional** and prompt-driven. Leave it off for a quote card; turn it on for a mood piece.
+- Platforms in the batch that can't take video at all are flagged **before** converting, not after a failed publish.
+- If the panels or their text change after the video was built, the video needs rebuilding. The editor says so ("Save & build the video"); don't tell the author a stale preview is what will publish.
 
 ### Step 8: Schedule
 There is only one scheduling mode: the posts drop into the user's **per-platform queues**, and each queue decides when its posts publish. There is no campaign start date and no per-post times — if the user asks for those, explain that timing lives in their queue settings (`aa_list_queues` / `aa_update_queue`, or the dashboard's Queue page).

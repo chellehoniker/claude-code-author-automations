@@ -3,3 +3,6 @@
 # generates side files.
 .DS_Store
 node_modules/
+
+# Local-only release report; never committed.
+.update-report.md
