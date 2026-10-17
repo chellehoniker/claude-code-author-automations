@@ -13,7 +13,7 @@ If the user wants to **promote an existing post** (boost it), STOP and route to 
 
 - **Requires the ads upgrade** — a paid add-on at **$20/month**, included in every STOS plan. Callers without it get a 403; point them at authorautomations.social/pricing.
 - **Pen-name-scoped.** Every tool here takes `profileId`. Switch via `pen-names` first if a specific pen name was mentioned and carry the resolved `profileId` through every call.
-- **Defaults to PAUSED.** Always create with `status: "paused"`. The user explicitly launches afterward.
+- **Defaults to PAUSED.** Always create with `extra: { status: "PAUSED" }` (uppercase, inside `extra`). The user explicitly launches afterward.
 - Confirm before `aa_create_standalone_ad` with an AlertDialog-style prompt: "This will create a paused ad with up to $X potential spend. Type 'go'."
 - **Not just Meta anymore.** `aa_create_standalone_ad` also creates on TikTok (all goals; min $20 budget; `imageUrl` may be a video URL), LinkedIn (all goals except app_promotion), Google (goals engagement/traffic/awareness/video_views; `campaignType` display|search, keywords, businessName, longHeadline; headline max 30 / body max 90 chars), and Pinterest (same 4 goals; optional boardId; headline max 100 / body max 500; $5 min). This skill's wizard is Meta-first, but the same gates (paused default, spend confirm) apply on every network.
 - **Ads start IN-APP, never in a network's own console.** Nothing spends until it's switched on from inside Author Automations. Meta, TikTok, LinkedIn and Amazon ads are created paused; Google, Pinterest and ChatGPT have no paused state, so the wizard doesn't create them until Start. Either way it's started here: `aa_amazon_ads_campaign_state` for an Amazon campaign, the dashboard's **Start these ads** button for a wizard run. Never send the user to Meta Ads Manager, Amazon's campaign manager, or any other native console to turn an ad on.
@@ -42,7 +42,7 @@ Ask which objective. Options + when to pick each:
 - **Traffic** — drive clicks to a URL (book sales page, landing page, newsletter signup). The most common objective for authors.
 - **Awareness** — maximize reach (impressions). Cheapest CPM but lowest action rate. Pick when the user explicitly says "I just want eyeballs."
 - **Video views** — optimize for ThruPlay / 15s view. Use only with video creative.
-- **Lead gen** — Meta's in-platform lead form. Create the form first with `aa_create_lead_form` (or pick an existing one from `aa_list_lead_forms`) and pass its id as `leadFormId`.
+- **Lead gen** — Meta's in-platform lead form. Create the form first with `aa_create_lead_form` (or pick an existing one from `aa_list_lead_forms`), then pass `extra: { goal: "lead_generation", leadGenFormId: "<form id>" }`. Use `leadGenFormId` inside `extra`; the top-level `leadFormId` parameter isn't translated and the form would be missing.
 - **Conversions** — optimize for a pixel event (purchase, signup). Requires Meta pixel installed on the destination site.
 
 Capture as `objective`. If the user is vague ("I just want more book sales"), default to **Traffic** with their book sales URL.
@@ -127,7 +127,7 @@ aa_create_standalone_ad({
 })
 ```
 
-Everything except `accountId`, `adAccountId`, `targeting` and `profileId` goes inside `extra`, flat, exactly as named above: it is forwarded as-is, and nothing translates nested `creative` or `budget` objects. Put a field anywhere else and it's dropped, so the ad could come out without its copy or not paused. Check the returned status says paused before telling the author.
+Put the fields in this recipe inside `extra`, flat, exactly as named above: `extra` is forwarded as-is, and nothing translates nested `creative` or `budget` objects into these fields, so a nested shape can produce an ad without its copy, budget or paused status. (`rawTargeting` is still a supported alternative to `targeting`.) Check the returned status says paused before telling the author.
 
 ### After create
 

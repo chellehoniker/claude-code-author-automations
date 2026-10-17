@@ -46,8 +46,8 @@ Optional. Max **3 buttons** per automation. Each button:
 
 Ask: "Should this watch every post on the account, or just one specific post?" Most launch-style automations are scoped to a single post (avoids accidentally DMing people who comment on unrelated content months later).
 
-- **Whole account** — leave `postId` unset.
-- **Single post** — call `aa_list_posts({ profileId? })` to surface candidates, get the user to pick, capture `postId`.
+- **Whole account** — leave `platformPostId` out.
+- **Single post** — call `aa_list_posts({ profileId? })` to surface candidates and get the user to pick. Then take that post's **native** id for the account you're automating: `platforms[].platformPostId` on the entry whose `accountId` matches (e.g. `1259680367232681_122123221287455819` on Facebook). Pass it as `platformPostId`. The post's own `_id` is not accepted; an unknown field is dropped, which would silently turn this into a whole-account automation. Read the scope back in the recap ("only on your Oct 14 post").
 
 ### 2. Confirm the account
 
@@ -76,7 +76,7 @@ Ask: "Should the automation ALSO post a public reply to the comment thread?" If 
 
 ### 7. Show + create — PAUSED
 
-Recap the full automation (scope, account, keywords, DM body, buttons, public reply). Confirm before firing. Call `aa_create_comment_automation` with `isActive: false` so it's left paused until the user explicitly enables it. Check `isActive` in the response. If it came back `true`, pause it straight away with `aa_update_comment_automation({ isActive: false })`, tell the user, and confirm it's paused before moving on.
+Recap the full automation (scope, account, keywords, DM body, buttons, public reply). Confirm before firing. Call `aa_create_comment_automation` with `isActive: false` so it's left paused until the user explicitly enables it. Check `isActive` in the response. If it came back `true`, pause it straight away with `aa_update_comment_automation({ id: <automation id from the response>, isActive: false, profileId })`, check the response says `isActive: false`, and tell the user what happened before moving on.
 
 Tell the user: "Created and paused. Flip it on from the dashboard (or ask me to enable it) once you're ready."
 

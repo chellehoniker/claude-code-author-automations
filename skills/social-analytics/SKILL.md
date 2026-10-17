@@ -7,7 +7,7 @@ description: Use when the user wants to know how their social posts are performi
 
 Pull engagement and reach numbers across the user's connected accounts, identify top + bottom performers, and surface the data-driven best time to post.
 
-> **Access.** Analytics tools currently answer only for StorytellerOS accounts. If a call returns 403, tell the user plainly that analytics through chat isn't available on their account yet and point them to the dashboard's analytics pages. Don't tell them to upgrade or buy anything for it. Ads reports below also need the ads upgrade.
+> **Access.** Analytics tools currently answer only for StorytellerOS accounts. If a call returns 403, tell the user plainly that analytics isn't available on their account yet (the dashboard's analytics page shows "coming soon" for them too). Don't tell them to upgrade or buy anything for it. Ads reports below also need the ads upgrade.
 
 ## Three things to know about analytics
 
