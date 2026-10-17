@@ -16,7 +16,7 @@ If the user wants to **promote an existing post** (boost it), STOP and route to 
 - **Defaults to PAUSED.** Always create with `status: "paused"`. The user explicitly launches afterward.
 - Confirm before `aa_create_standalone_ad` with an AlertDialog-style prompt: "This will create a paused ad with up to $X potential spend. Type 'go'."
 - **Not just Meta anymore.** `aa_create_standalone_ad` also creates on TikTok (all goals; min $20 budget; `imageUrl` may be a video URL), LinkedIn (all goals except app_promotion), Google (goals engagement/traffic/awareness/video_views; `campaignType` display|search, keywords, businessName, longHeadline; headline max 30 / body max 90 chars), and Pinterest (same 4 goals; optional boardId; headline max 100 / body max 500; $5 min). This skill's wizard is Meta-first, but the same gates (paused default, spend confirm) apply on every network.
-- **Ads start IN-APP, never in a network's own console.** Every ad is created PAUSED and switched on from inside Author Automations: `aa_amazon_ads_campaign_state` for an Amazon campaign, the dashboard's **Start these ads** button for a wizard run. Never send the user to Meta Ads Manager, Amazon's campaign manager, or any other native console to turn an ad on.
+- **Ads start IN-APP, never in a network's own console.** Nothing spends until it's switched on from inside Author Automations. Meta, TikTok, LinkedIn and Amazon ads are created paused; Google, Pinterest and ChatGPT have no paused state, so the wizard doesn't create them until Start. Either way it's started here: `aa_amazon_ads_campaign_state` for an Amazon campaign, the dashboard's **Start these ads** button for a wizard run. Never send the user to Meta Ads Manager, Amazon's campaign manager, or any other native console to turn an ad on.
 - **One wizard, many destinations.** The dashboard has a single goal-first **Create ad** wizard at `/dashboard/ads/create`: pick the goal, pick the destinations, and each destination gets its own campaign and its own budget. Progress saves as the author advances, so a half-built ad is resumable from where they stopped. Point users there when they would rather click than describe. It creates ads on Meta, TikTok, LinkedIn, Amazon, Google, Pinterest and ChatGPT. **X is listed but can't be created from here yet**, so don't promise it. Meta, TikTok, LinkedIn and Amazon are created **paused** and switched on with **Start these ads**. Google, Pinterest and ChatGPT have no paused state, so nothing is created on those until **Start these ads** is pressed; the wizard says so on the budget step.
 
 ## Decision tree
@@ -76,7 +76,7 @@ Capture:
 - `age` — `{ min, max }`. Default `18–65` if not specified.
 - `gender` — `"all"` | `"male"` | `"female"`. Default `"all"`.
 - `geo` — list of country codes (`["US", "CA", "GB"]`) or city-level targets. Ask if not stated.
-- `interests` — use `aa_search_ad_interests({ query })` to resolve user intent ("cozy mystery readers") into Meta interest IDs. Pick 3–8 relevant ones; too few = too narrow, too many = too diffuse.
+- `interests` — use `aa_search_ad_interests({ accountId, q, profileId? })` to resolve user intent ("cozy mystery readers") into Meta interest IDs. Pick 3–8 relevant ones; too few = too narrow, too many = too diffuse.
 - `advantageAudience: boolean` — Meta's auto-expansion. Default `true` for new accounts (Meta's targeting often outperforms manual constraints), `false` if the user has a strong opinion about hard constraints.
 
 For geo/entity ids beyond plain interests (cities, regions, zips), `aa_search_ad_targeting` searches the platform's full targeting catalog. On the tool call itself: the structured `targeting` object (geoLocations, interests, places, neighborhoods, `excludedLocations: { geo, zips }`, ageMin/ageMax, genders) and `rawTargeting` (raw Meta targeting JSON) are **mutually exclusive — pass one or the other, never both (the server 422s).**
@@ -115,14 +115,19 @@ aa_create_standalone_ad({
   profileId: "...",       // from pen-names if non-primary
   accountId: "...",       // the connected social account, from aa_list_accounts
   adAccountId: "...",     // from aa_list_ad_accounts
-  creative: { headline, primaryText, imageUrl, linkUrl, cta },
   targeting: { ageMin, ageMax, gender, countries, interests },
-  budget: { type, amount },
-  extra: { status: "PAUSED", goal: "traffic", name: "...", schedule: { startDate, endDate } }
+  extra: {
+    name: "...",
+    goal: "traffic",
+    status: "PAUSED",
+    headline: "...", body: "...", imageUrl: "...", linkUrl: "...", callToAction: "LEARN_MORE",
+    budgetAmount: 20, budgetType: "daily",   // lifetime budgets also need endDate
+    startDate: "2026-11-01", endDate: "2026-11-07"
+  }
 })
 ```
 
-`status`, `goal`, `name` and `schedule` have no parameter of their own; they go inside `extra`, which is forwarded as-is. Put them anywhere else and they're dropped, so the ad would not be created paused. Check the returned status says paused before telling the author.
+Everything except `accountId`, `adAccountId`, `targeting` and `profileId` goes inside `extra`, flat, exactly as named above: it is forwarded as-is, and nothing translates nested `creative` or `budget` objects. Put a field anywhere else and it's dropped, so the ad could come out without its copy or not paused. Check the returned status says paused before telling the author.
 
 ### After create
 
@@ -173,10 +178,9 @@ Verdicts wait seven days before judging, measure against the author's target fir
 - **Routing a boost-post request here.** "Promote my last reel" = `boost-post` skill, NOT this one. Ask "is this a fresh ad or a boost of an existing post?" if it's ambiguous.
 - **Skipping the duration on daily budgets.** A $20/day ad with no end date is open-ended spend. Always set a duration or surface that risk.
 - **Forgetting `bidAmount` / `roasAverageFloor`.** The non-default bid strategies REQUIRE these. The API 422s without them.
-- **Auto-launching.** Always paused on create. Always.
+- **Auto-launching.** Create paused wherever the network allows it, and never press Start (or create a no-paused-state destination) without the spend confirmation.
 - **Wrong `profileId`.** Ad accounts are connected per pen name; using the wrong `profileId` either 404s the `adAccountId` or, worse, finds a matching account under the wrong identity.
 - **Vague creative.** "Buy my book" headlines underperform. Help the user write a hook ("Cozy mystery readers — meet the witches of Hollow Creek") before firing.
-- **Sending the author to a native console.** Ads are created paused here and started here. Saying "now go switch it on in Amazon" is wrong, and it is the single most common mistake in this skill.
+- **Sending the author to a native console.** Ads are created here and started here. Saying "now go switch it on in Amazon" is wrong, and it is the single most common mistake in this skill.
 - **Guessing an ASIN.** If the book's listing isn't to hand, ask for it. Never pattern-match a plausible `B0...` string.
-- **Offering Sponsored Brands.** `campaignType: "sb"` is refused today. Build Sponsored Products and say Sponsored Brands is coming.
 - **Putting one campaign in two groups.** It answers 409 by design, because double-counted spend makes every verdict wrong. Unassign first.

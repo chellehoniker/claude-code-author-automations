@@ -7,7 +7,7 @@ description: Use when the user wants to know how their social posts are performi
 
 Pull engagement and reach numbers across the user's connected accounts, identify top + bottom performers, and surface the data-driven best time to post.
 
-> **On every plan.** Analytics for every post and platform is included with every subscription. Only the ads reports below need the ads upgrade.
+> **Access.** Analytics tools currently answer only for StorytellerOS accounts. If a call returns 403, tell the user plainly that analytics through chat isn't available on their account yet and point them to the dashboard's analytics pages. Don't tell them to upgrade or buy anything for it. Ads reports below also need the ads upgrade.
 
 ## Three things to know about analytics
 

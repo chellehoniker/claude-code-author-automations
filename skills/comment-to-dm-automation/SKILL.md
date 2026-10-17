@@ -76,7 +76,7 @@ Ask: "Should the automation ALSO post a public reply to the comment thread?" If 
 
 ### 7. Show + create — PAUSED
 
-Recap the full automation (scope, account, keywords, DM body, buttons, public reply). Confirm before firing. Call `aa_create_comment_automation` with `isActive: false` so nothing fires until the user explicitly enables it. Check `isActive` in the response before telling the user it's paused.
+Recap the full automation (scope, account, keywords, DM body, buttons, public reply). Confirm before firing. Call `aa_create_comment_automation` with `isActive: false` so it's left paused until the user explicitly enables it. Check `isActive` in the response. If it came back `true`, pause it straight away with `aa_update_comment_automation({ isActive: false })`, tell the user, and confirm it's paused before moving on.
 
 Tell the user: "Created and paused. Flip it on from the dashboard (or ask me to enable it) once you're ready."
 
