@@ -17,7 +17,7 @@ If the user wants to **promote an existing post** (boost it), STOP and route to 
 - Confirm before `aa_create_standalone_ad` with an AlertDialog-style prompt: "This will create a paused ad with up to $X potential spend. Type 'go'."
 - **Not just Meta anymore.** `aa_create_standalone_ad` also creates on TikTok (all goals; min $20 budget; `imageUrl` may be a video URL), LinkedIn (all goals except app_promotion), Google (goals engagement/traffic/awareness/video_views; `campaignType` display|search, keywords, businessName, longHeadline; headline max 30 / body max 90 chars), and Pinterest (same 4 goals; optional boardId; headline max 100 / body max 500; $5 min). This skill's wizard is Meta-first, but the same gates (paused default, spend confirm) apply on every network.
 - **Ads start IN-APP, never in a network's own console.** Every ad is created PAUSED and switched on from inside Author Automations: `aa_amazon_ads_campaign_state` for an Amazon campaign, the dashboard's **Start these ads** button for a wizard run. Never send the user to Meta Ads Manager, Amazon's campaign manager, or any other native console to turn an ad on.
-- **One wizard, eight destinations.** The dashboard has a single goal-first **Create ad** wizard at `/dashboard/ads/create` that covers Meta, TikTok, Amazon, LinkedIn, Google, Pinterest, X, and ChatGPT in one pass: pick the goal, pick the destinations, and each destination gets its own campaign and its own budget. Progress saves as the author advances, so a half-built ad is resumable from where they stopped. Point users there when they would rather click than describe. Meta, TikTok, LinkedIn and Amazon can be created paused; **Google, Pinterest, X and ChatGPT cannot**, so nothing is created on those until **Start these ads** is pressed. The wizard says so on the budget step.
+- **One wizard, many destinations.** The dashboard has a single goal-first **Create ad** wizard at `/dashboard/ads/create`: pick the goal, pick the destinations, and each destination gets its own campaign and its own budget. Progress saves as the author advances, so a half-built ad is resumable from where they stopped. Point users there when they would rather click than describe. It creates ads on Meta, TikTok, LinkedIn, Amazon, Google, Pinterest and ChatGPT. **X is listed but can't be created from here yet**, so don't promise it. Meta, TikTok, LinkedIn and Amazon are created **paused** and switched on with **Start these ads**. Google, Pinterest and ChatGPT have no paused state, so nothing is created on those until **Start these ads** is pressed; the wizard says so on the budget step.
 
 ## Decision tree
 
@@ -113,14 +113,16 @@ Only if the user types "go" (or unambiguous affirmative — "yes", "confirm", "d
 ```js
 aa_create_standalone_ad({
   profileId: "...",       // from pen-names if non-primary
+  accountId: "...",       // the connected social account, from aa_list_accounts
   adAccountId: "...",     // from aa_list_ad_accounts
-  objective: "TRAFFIC",
   creative: { headline, primaryText, imageUrl, linkUrl, cta },
-  audience: { age, gender, geo, interests, advantageAudience },
-  budget: { budgetType, amount, duration, bidStrategy, bidAmount?, roasAverageFloor? },
-  status: "paused"
+  targeting: { ageMin, ageMax, gender, countries, interests },
+  budget: { type, amount },
+  extra: { status: "PAUSED", goal: "traffic", name: "...", schedule: { startDate, endDate } }
 })
 ```
+
+`status`, `goal`, `name` and `schedule` have no parameter of their own; they go inside `extra`, which is forwarded as-is. Put them anywhere else and they're dropped, so the ad would not be created paused. Check the returned status says paused before telling the author.
 
 ### After create
 
@@ -135,9 +137,9 @@ Do NOT launch automatically. Launching is a separate explicit step the user take
 Amazon is no longer reporting-only. A full campaign can be built and started from here.
 
 1. `aa_amazon_ads_status` lists the connected Amazon Ads account and its **advertiser profiles**. Each marketplace (US, UK, DE) is its own profile with its own currency, so the author has to pick one. Its id is `amazonProfileId` on every call below.
-2. `aa_amazon_ads_brands({ amazonProfileId })` lists the registered brands the profile can advertise under, plus that brand's logo images when you pass `brandEntityId`. An empty list simply means the profile is not in Amazon Brand Registry. Read-only, nothing is created and no money moves.
+2. `aa_amazon_ads_brands({ amazonProfileId })` lists the registered brands the profile can advertise under, plus that brand's logo images when you pass `brandId`. An empty list simply means the profile is not in Amazon Brand Registry. Read-only, nothing is created and no money moves.
 3. `aa_create_amazon_campaign` builds campaign, ad group, product ad, keywords and negative keywords in one chain:
-   - `campaignType` is `sp` (Sponsored Products, the default and the only type available today) or `sb` (Sponsored Brands). **`sb` is written but shipped disabled and is refused**, so don't offer it as a choice; if the author asks for a headline-and-logo ad, say Sponsored Brands is coming and build Sponsored Products now.
+   - `campaignType` is `sp` (Sponsored Products, the default) or `sb` (Sponsored Brands, the headline-and-logo ad; needs a registered brand from step 2). For Sponsored Brands with its full options use `aa_amazon_ads_create_sb`, and for Sponsored Display `aa_amazon_ads_create_sd`. Same rules for every type: created paused, started in-app.
    - `asin` is the 10-character ASIN of the book being advertised. Take it from the book's real listing. **Never guess an ASIN**: a wrong one advertises somebody else's book with the author's money.
    - `targetingType` is `auto` (Amazon finds readers from the listing) or `manual` (the author supplies `keywords`, up to 100, each with `matchType` exact / phrase / broad and an optional `bid`). Auto is the honest default for a first campaign.
    - `negativeKeywords` (up to 100, each `{ text, matchType }` with matchType `exact` or `phrase`) are the searches the ad must NOT show for. These work with auto AND manual targeting, and they are the cheapest waste-cutter on Amazon. Offer them every time: the author's own other-genre titles, "free", a competitor they don't want to pay to sit beside.

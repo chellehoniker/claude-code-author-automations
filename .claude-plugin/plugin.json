@@ -1,7 +1,7 @@
 {
   "name": "author-automations-social",
   "displayName": "Reader Radius",
-  "version": "3.13.1",
+  "version": "3.14.0",
   "description": "Reader Radius skills and slash commands for author marketing, social posts, campaigns, and analytics. Pairs with your existing MCP connector; existing credential pairs and connections remain unchanged.",
   "author": {
     "name": "Author Automations",

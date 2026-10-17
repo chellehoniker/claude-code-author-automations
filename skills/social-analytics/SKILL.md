@@ -7,7 +7,7 @@ description: Use when the user wants to know how their social posts are performi
 
 Pull engagement and reach numbers across the user's connected accounts, identify top + bottom performers, and surface the data-driven best time to post.
 
-> **STOS-only.** Analytics tools require a StorytellerOS-tier subscription. Non-STOS callers get a 403; in that case tell the user "This feature is on the StorytellerOS plan — upgrade at authorautomations.social/pricing to unlock analytics."
+> **On every plan.** Analytics for every post and platform is included with every subscription. Only the ads reports below need the ads upgrade.
 
 ## Three things to know about analytics
 

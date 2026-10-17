@@ -9,7 +9,7 @@ A comment-to-DM automation watches a Facebook page or Instagram account (optiona
 
 ## Quick facts
 
-- **STOS-only feature** — requires the user to be on a Storyteller OS plan. If the user is on the free Cowork tier, tell them this requires upgrade and stop.
+- **On every plan.** No upgrade needed.
 - **Pen-name-scoped.** Every automation tool takes `profileId`. Switch context via `pen-names` first if the user mentioned a specific pen name and carry the resolved `profileId` through every call.
 - **Defaults to PAUSED on create.** Don't auto-enable. The user explicitly flips it on after reviewing.
 - Supported platforms: **Facebook pages** and **Instagram business/creator accounts** only. Reddit/TikTok/LinkedIn/Threads/X don't support this API. (Inbox **flows** can also start from a comment keyword; there, X is DM-only: X comments no longer arrive, so a comment-keyword flow on X would never fire.)
@@ -70,19 +70,19 @@ If the user wants the link as a tappable button instead of inline text, plan a b
 
 Ask if they want buttons. Max 3, each title ≤ 20 chars. Typical setup: one URL button labeled "Get the freebie" or "Buy now."
 
-### 6. Optional reply-publicly toggle
+### 6. Optional public reply
 
-Ask: "Should the automation ALSO post a public reply to the comment thread?" (e.g., "Sent! Check your DMs."). This is a separate flag — usually `true` for launches (boosts engagement signal) and `false` for low-key freebies.
+Ask: "Should the automation ALSO post a public reply to the comment thread?" If yes, get the exact text (e.g., "Sent! Check your DMs.") and pass it as `commentReply`. Leave `commentReply` out when there should be no public reply. Usually worth it for launches (it lifts engagement); skip it for low-key freebies.
 
 ### 7. Show + create — PAUSED
 
-Recap the full automation (scope, account, keywords, DM body, buttons, public reply). Confirm before firing. Call `aa_create_comment_automation` with `status: "paused"` so nothing fires until the user explicitly enables.
+Recap the full automation (scope, account, keywords, DM body, buttons, public reply). Confirm before firing. Call `aa_create_comment_automation` with `isActive: false` so nothing fires until the user explicitly enables it. Check `isActive` in the response before telling the user it's paused.
 
 Tell the user: "Created and paused. Flip it on from the dashboard (or ask me to enable it) once you're ready."
 
 ## Editing automations
 
-`aa_update_comment_automation` takes the automation id plus any subset of fields. Omitted fields stay as-is. Toggle `status: "active"` / `"paused"` to enable/disable without rebuilding.
+`aa_update_comment_automation` takes the automation id plus any subset of fields. Omitted fields stay as-is. Set `isActive: true` / `false` to enable or disable without rebuilding.
 
 ## Confirm before firing — destructive + reach actions
 
@@ -91,7 +91,6 @@ Tell the user: "Created and paused. Flip it on from the dashboard (or ask me to 
 
 ## Common pitfalls
 
-- **Forgetting it's STOS-only.** Don't propose this flow to a free-tier user.
 - **Auto-enabling on create.** Always default to paused. Users want to review the DM body live before strangers receive it.
 - **Skipping the post scope question.** A whole-account automation triggered by "yes" will fire on every casual comment for months — almost never what the user wanted.
 - **Overflowing the message length.** 640 with buttons, 1000 without. Validate before the API call.

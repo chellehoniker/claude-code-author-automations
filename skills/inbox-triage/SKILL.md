@@ -7,7 +7,7 @@ description: Use when the user wants to read or respond to incoming social activ
 
 Read incoming social activity across the user's connected accounts, draft replies in their voice, and send only after explicit confirmation.
 
-> **STOS-only.** Inbox tools require a StorytellerOS-tier subscription. Non-STOS callers get a 403; in that case tell the user "This feature is on the StorytellerOS plan — upgrade at authorautomations.social/pricing to unlock the unified inbox."
+> **On every plan.** The unified inbox (DMs, comments, reviews) is included with every subscription.
 
 ## Three things to know about the inbox
 

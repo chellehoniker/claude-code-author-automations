@@ -13,7 +13,7 @@ Take an already-published organic post and put paid spend behind it as an ad. **
 
 Boost works on **Meta (Facebook/Instagram), TikTok, LinkedIn, Google, and Pinterest** ad accounts. Goals vary per network; budget minimums: **TikTok $20/day, Pinterest $5**. The `adAccountId` comes from `aa_list_ad_accounts` — Google/LinkedIn/Pinterest connections may return no ad accounts, in which case boosting isn't possible for that account.
 
-**ChatGPT and Amazon can't be boosted**, because neither has an organic post to put money behind. They are still fully advertisable: both are destinations in the dashboard's one **Create ad** wizard at `/dashboard/ads/create` (goal first, then destinations, progress saved so a half-built ad resumes), and Amazon also has a dedicated chat path in the `create-meta-ad` skill (`aa_create_amazon_campaign`, then `aa_amazon_ads_campaign_state` to start it). Whichever route the author takes, campaigns are created **paused** and started **in-app**, either with that tool or the wizard's **Start these ads** button. Never point an author at a network's own ad console to switch something on.
+**ChatGPT and Amazon can't be boosted**, because neither has an organic post to put money behind. They are still fully advertisable: both are destinations in the dashboard's one **Create ad** wizard at `/dashboard/ads/create` (goal first, then destinations, progress saved so a half-built ad resumes), and Amazon also has a dedicated chat path in the `create-meta-ad` skill (`aa_create_amazon_campaign`, then `aa_amazon_ads_campaign_state` to start it). Whichever route the author takes, nothing spends until it's started **in-app**, with that tool or the wizard's **Start these ads** button: Amazon campaigns are created paused, and destinations with no paused state (Google, Pinterest, ChatGPT) aren't created until Start. Never point an author at a network's own ad console to switch something on.
 
 ## Three things to know about boosting
 
@@ -66,7 +66,7 @@ Don't go deeper than these three on a boost — boosts aren't full campaigns. If
 
 **Each network refuses some targeting.** Since October 2026 a network rejects targeting it can't use instead of ignoring it, so the server leaves those fields out for you: age and gender on Google, LinkedIn and X; languages anywhere but Meta and Google; interests on Google. If the author asked for one of those on such a network, tell them it doesn't apply there rather than implying it was used.
 
-**Two ways to pass targeting — never both.** The `targeting` object is structured (geoLocations, interests, places, neighborhoods, `excludedLocations: { geo: [...], zips: [...] }`, ageMin/ageMax, genders). Alternatively, `rawTargeting` takes raw Meta targeting JSON pasted verbatim. They are **mutually exclusive — the server 422s if you pass both.** Use `targeting` unless the user hands you a ready-made Meta targeting spec.
+**Two ways to pass targeting — never both.** The `targeting` object is structured (geoLocations, interests, places, neighborhoods, `excludedLocations: { countries: [...], regions: [...], cities: [...], zips: [...] }`, ageMin/ageMax, genders). Exclusions only go in those four buckets; anything else is ignored, so a location you meant to exclude would still be targeted. Alternatively, `rawTargeting` takes raw Meta targeting JSON pasted verbatim. They are **mutually exclusive — the server 422s if you pass both.** Use `targeting` unless the user hands you a ready-made Meta targeting spec.
 
 ### 4. Configure budget + duration
 
