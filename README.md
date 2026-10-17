@@ -99,6 +99,10 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 
 ## What's new
 
+### v3.14.1 (2026-10-17): analytics on every plan
+
+- **`social-analytics`:** analytics is included in every plan, so the skill no longer says it answers only for StorytellerOS accounts. If a call returns `ANALYTICS_ADDON_REQUIRED`, analytics isn't switched on for that account yet, and the skill has the assistant point the user to support, never to a purchase.
+
 ### v3.14.0 (2026-10-17): Shopify store from chat
 
 - **New `shopify-store` skill** for the 18 new Shopify tools: check the store's permissions (`aa_shopify_store`), list, create (with images), edit and reprice products, put a product on the storefront (`aa_list_shopify_channels`, `aa_publish_shopify_product`), series collections, stock levels by location, and discount codes. Free on every plan. The skill's main rule: an **active** product isn't on sale until it is published to the Online Store channel. New products start as drafts, and the ISBN goes in `sku`.
