@@ -12,7 +12,7 @@ A comment-to-DM automation watches a Facebook page or Instagram account (optiona
 - **STOS-only feature** — requires the user to be on a Storyteller OS plan. If the user is on the free Cowork tier, tell them this requires upgrade and stop.
 - **Pen-name-scoped.** Every automation tool takes `profileId`. Switch context via `pen-names` first if the user mentioned a specific pen name and carry the resolved `profileId` through every call.
 - **Defaults to PAUSED on create.** Don't auto-enable. The user explicitly flips it on after reviewing.
-- Supported platforms: **Facebook pages** and **Instagram business/creator accounts** only. Reddit/TikTok/LinkedIn/Threads/X don't support this API.
+- Supported platforms: **Facebook pages** and **Instagram business/creator accounts** only. Reddit/TikTok/LinkedIn/Threads/X don't support this API. (Inbox **flows** can also start from a comment keyword; there, X is DM-only: X comments no longer arrive, so a comment-keyword flow on X would never fire.)
 
 ## Message length limits
 

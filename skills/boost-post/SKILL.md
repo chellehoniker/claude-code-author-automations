@@ -19,7 +19,7 @@ Boost works on **Meta (Facebook/Instagram), TikTok, LinkedIn, Google, and Pinter
 
 1. **Real money. Confirm explicitly.** Every boost has a compute-then-show step: `total = daily × duration_days`. Show the arithmetic. Use the verbatim confirmation gate (below) — typed "go" only, not "yes" or "ok."
 
-2. **Default to paused state when the user is uncertain.** `aa_boost_post` creates the ad in a paused state when you pass `status: "PAUSED"` — the user can then flip it live in Meta Ads Manager when they're ready. Use this whenever the user hasn't given firm targeting, hesitates on budget, or asks "wait, how does this work?"
+2. **Default to paused state when the user is uncertain.** `aa_boost_post` creates the boost paused when you pass `status: "PAUSED"`. Only the campaign is paused; its ad set and ad are created switched on, so starting the campaign is all it takes to deliver. Start it in-app with `aa_update_ad_campaign_status` (or the dashboard's ads screen), never in Meta Ads Manager. Use paused whenever the user hasn't given firm targeting, hesitates on budget, or asks "wait, how does this work?"
 
 3. **Pick the post BEFORE configuring spend.** If the user says "boost my best post," pull analytics first (`aa_get_analytics`), surface the top performer, and confirm the pick. Don't configure budget and targeting against the wrong post.
 
@@ -30,7 +30,7 @@ Boost works on **Meta (Facebook/Instagram), TikTok, LinkedIn, Google, and Pinter
 | "Boost post ID xyz" / "Promote this post [specific URL]" | `aa_list_posts` (filter to the post) → confirm pick |
 | "Boost my best post from last week" | `aa_get_analytics` last 7 days → pick top by engagement → confirm pick |
 | "Promote the launch post" | `aa_list_posts` filtered by recency or caption keyword → confirm pick |
-| "Run an ad on Curses and Currents" | This isn't a boost — that's a fresh campaign. Use `social-campaign` or hand off to Meta Ads Manager. |
+| "Run an ad on Curses and Currents" | This isn't a boost — that's a fresh ad. Use `create-meta-ad` (or the dashboard's **Create ad** wizard). |
 | "Boost to people interested in cozy mystery" | After post pick: `aa_search_ad_interests` for targeting |
 | "Is the boost working?" / "How is the whole launch doing?" | `aa_ads_groups_rollup` for the cross-network verdict (put the boost in a group first with `aa_ads_groups_create` + `aa_ads_groups_assign`); see `create-meta-ad` for the group tools |
 
@@ -62,7 +62,9 @@ Ask the user:
 - **Age range** — default 18-65 if not stated. Ask if there's a specific range.
 - **Geo** — countries or cities. Default "United States" if author is US-based and didn't say. Ask if they want international. For city/region/zip-level geo ids beyond plain country codes, `aa_search_ad_targeting` searches the platform's full targeting catalog (geo and other entity types — `aa_search_ad_interests` covers interests only).
 
-Don't go deeper than these three on a boost — boosts aren't full campaigns. If the user wants demographic + behavioral + lookalike targeting, route them to `social-campaign` or Meta Ads Manager.
+Don't go deeper than these three on a boost — boosts aren't full campaigns. If the user wants demographic + behavioral + lookalike targeting, route them to `create-meta-ad` or the dashboard's **Create ad** wizard.
+
+**Each network refuses some targeting.** Since October 2026 a network rejects targeting it can't use instead of ignoring it, so the server leaves those fields out for you: age and gender on Google, LinkedIn and X; languages anywhere but Meta and Google; interests on Google. If the author asked for one of those on such a network, tell them it doesn't apply there rather than implying it was used.
 
 **Two ways to pass targeting — never both.** The `targeting` object is structured (geoLocations, interests, places, neighborhoods, `excludedLocations: { geo: [...], zips: [...] }`, ageMin/ageMax, genders). Alternatively, `rawTargeting` takes raw Meta targeting JSON pasted verbatim. They are **mutually exclusive — the server 422s if you pass both.** Use `targeting` unless the user hands you a ready-made Meta targeting spec.
 
@@ -104,7 +106,7 @@ Then the AlertDialog-style gate, verbatim:
 
 If the user types anything other than "go" — including "yes", "ok", "sure", "do it" — do not fire. Ask again with the same gate. The unusual word is the safety mechanism; it forces a deliberate keystroke.
 
-If the user hesitates, asks a question, or seems uncertain at this gate: SWITCH to paused state. Tell them "I'll create it paused so you can review in Meta Ads Manager and flip it live yourself when you're ready" and re-issue the gate with `status: PAUSED` in the plan.
+If the user hesitates, asks a question, or seems uncertain at this gate: SWITCH to paused state. Tell them "I'll create it paused so nothing spends; when you're ready, tell me to start it or press Start on the ads screen" and re-issue the gate with `status: PAUSED` in the plan.
 
 ### 7. Fire
 
@@ -116,7 +118,8 @@ Show what was created:
 - Boost ID
 - Meta Ads Manager link (if the response surfaces one)
 - Status (ACTIVE or PAUSED)
-- "You can pause or edit it in Meta Ads Manager — the boost will run for [duration] unless you stop it"
+- "You can pause or start it from here or the ads screen. The boost runs for [duration] unless you stop it."
+- A brand-new boost can take a while (often 15 minutes or more) to appear in `aa_list_ads`, `aa_get_ad` and the ad tree, so look-ups and deletes through the ads tools may say "not found" right after creating it. Wait for the next sync rather than creating it again.
 
 ## Confirm before firing
 
@@ -133,4 +136,5 @@ Skip either gate = budget over-spend risk. Don't do it.
 - **Don't boost posts older than ~6 months.** Meta deprioritizes old-content boosts and the user is usually better off scheduling a fresh post via `social-post`. Warn if the post is >6 months old.
 - **Don't add interest targeting blindly.** `aa_search_ad_interests` returns audience sizes — interests with <100k audience size will spend the budget fast on a narrow group; >50M will be too broad. Aim for 1-10M per interest as a starting point and tell the user the audience size.
 - **Don't try to boost a draft or scheduled post.** Boost only works on already-published posts. If `aa_list_posts` shows the post as scheduled, tell the user "this hasn't published yet — boost after it goes live."
+- **Don't send a button without a link.** A call-to-action needs `linkUrl`; a button on its own is dropped.
 - **Don't forget `profileId`.** Posts are scoped per pen name; boosting a post from the wrong pen name's analytics gets a 404 (see `pen-names`).
