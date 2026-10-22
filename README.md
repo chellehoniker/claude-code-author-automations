@@ -1,24 +1,27 @@
 # Reader Radius — Claude and ChatGPT Plugin
 
+**New in 3.15:** connecting Claude needs only the address `https://readerradius.com/api/mcp`. No Client ID or Client Secret: sign in, choose your pen names, approve. Existing connectors keep working.
+
 **New in 3.13.1:** Reader Radius is the display name in Claude and ChatGPT. The internal `author-automations-social` plugin ID and `author-automations` marketplace ID are intentionally unchanged, so existing installations, command namespaces, and separately configured MCP connections remain compatible. Update the plugin to receive the new branding; older clients without display-name support may still show the internal ID. No new credentials or connector setup is required.
 
 Schedule social posts, run AI campaigns, and manage your content calendar from Claude Code or Claude Cowork — across **15 platforms** including Instagram (Trial Reels, Stories, feed carousels), TikTok (with auto trending music), Threads (topic chains), YouTube Shorts, Facebook, LinkedIn, X, Pinterest, Reddit, Bluesky, Snapchat, Telegram, Google Business, WhatsApp, and Discord.
 
 ## Install
 
-The plugin ships **skills and slash commands**. The MCP connector itself is added separately because Cowork's plugin-bundled connector flow currently locks the OAuth credential fields, which we can't work around from the plugin manifest. Two short steps:
+The plugin ships **skills and slash commands**. The MCP connector is added separately. Two short steps:
 
 ### Step 1 — Add the connector
 
-In Cowork (or Claude Desktop): **Settings → Connectors → Add custom connector**
+In Claude or Cowork: **Settings → Connectors → Add custom connector**
 
 - **Name:** `Reader Radius` (existing connector names can remain unchanged)
-- **Remote MCP server URL:** `https://authorautomations.social/api/mcp`
-- **Advanced settings → OAuth Client ID:** generate at [authorautomations.social/dashboard/settings](https://authorautomations.social/dashboard/settings) → **Claude Connector** card → **Generate credential pair** → copy the value starting with `aacw_`
-- **Advanced settings → OAuth Client Secret:** the value starting with `aacs_` (shown once, copy carefully)
-- Click **Add**.
+- **Remote MCP server URL:** `https://readerradius.com/api/mcp`
+- Leave **Advanced settings** empty.
+- Click **Add**, then **Connect**. Sign in to Reader Radius, choose the pen names Claude can use, and click **Approve**.
 
-The connector authenticates immediately and the `aa_*` tools become available.
+In Claude Code: `claude mcp add --transport http --scope user reader-radius https://readerradius.com/api/mcp`, then `/mcp` → **reader-radius** → **Authenticate**.
+
+Connectors you set up earlier with a Client ID and Client Secret keep working.
 
 ### Step 2 — Install the plugin (for skills + slash commands)
 
@@ -31,7 +34,7 @@ In any Claude Code or Cowork session:
 
 This adds the conversational skills (`pen-names`, `instagram-reels`, `threads-post`, `youtube-video`, `reddit-post`, `tiktok-post`, `linkedin-post`, `aa-setup`, `social-post`, `social-campaign`, `queues`, `guides-author`, `inbox-triage`, `social-analytics`, `boost-post`, `rss-publishing`, `find-something-to-post`, `calendar-notes`, `organize-with-labels`, `comment-to-dm-automation`, `create-meta-ad`) and the `/aa-post` and `/aa-campaign` slash commands. No connector is bundled — Step 1 already covers that.
 
-> Full step-by-step walkthrough with screenshots: **[authorautomations.social/docs/connect](https://authorautomations.social/docs/connect)**.
+> Full step-by-step walkthrough: **[readerradius.com/docs/connect](https://readerradius.com/docs/connect)**.
 
 ## Quick start
 
@@ -65,11 +68,11 @@ The skills make Claude fluent in platform-specific options. Saying "schedule 8 t
 
 ## Authentication
 
-Authentication is on the **connector** (added in Step 1 of Install), not the plugin. You paste a Client ID + Client Secret pair you generate from your Author Automations Social dashboard into the connector's Advanced settings; Cowork runs the OAuth `client_credentials` grant against our token endpoint, mints a Bearer JWT, and uses it on every MCP request.
+Authentication is on the **connector** (added in Step 1 of Install), not the plugin. Claude registers itself with Reader Radius; you sign in, choose the pen names it may use, and approve once. Claude keeps the connection refreshed. Every app you approve shows under **Your connected apps** on the AI setup page (Settings → Integrations on the full dashboard), where you can disconnect it.
 
-Lost the Secret? Generate a new pair from [Settings → Claude Connector](https://authorautomations.social/dashboard/settings), then update the connector in Cowork: Settings → Connectors → click the connector → paste the new credentials → Save. The old pair stays revocable from the same Settings card.
+Client ID + Client Secret pairs still work for apps that can't sign in on their own: create one under **Advanced: use a client ID and secret** on the same page. ChatGPT and Codex use `https://readerradius.com/api/mcp/chatgpt` and a pair you select while signing in.
 
-If you have multiple pen names, your connector exposes every pen name you have access to. Switch between them by saying *"post under my [pen name]"* or *"switch to [pen name]"* — the bundled `pen-names` skill teaches Claude how to discover your pen names and route subsequent calls. See `skills/pen-names/SKILL.md`.
+If you have multiple pen names, your connector exposes the pen names you approved. Switch between them by saying *"post under my [pen name]"* or *"switch to [pen name]"* — the bundled `pen-names` skill teaches Claude how to discover your pen names and route subsequent calls. See `skills/pen-names/SKILL.md`.
 
 ## Updating
 
@@ -218,7 +221,7 @@ Closes the gap between the MCP tool surface and what users can ask for in chat. 
 If you previously installed v3.0–v3.2, you may have a half-broken auto-installed connector with locked credentials. Clean up:
 
 1. Settings → Connectors → find the auto-installed `author-automations` connector → **Remove**.
-2. Settings → Connectors → **Add custom connector** with the URL + credentials from the Install section above.
+2. Settings → Connectors → **Add custom connector** with the address from the Install section above, then Connect, sign in, choose your pen names and approve.
 3. The plugin keeps working as-is — its skills and slash commands don't change.
 
 ## License
