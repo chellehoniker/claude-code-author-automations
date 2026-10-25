@@ -40,9 +40,9 @@ Give one short report, plan vs. reality, in this order:
 1. **Account problems first:** payment failures, disconnected networks, `errors` from any network.
 2. **Platform:** is the spend where the plan said to start? Spend on a network the plan didn't choose isn't wrong, but say so.
 3. **Budget:** actual daily spend vs. the plan's starting daily budget, per campaign and in total.
-4. **Kill and scale:** apply the plan's own rules to each campaign, alongside the `aa_optimize_ads` verdict. When they disagree, show both and say which one you'd follow and why, in one line.
-5. **Amazon break-even:** compare ACOS with the plan's ACOS target. Plans built from chat usually carry the house fallback target, because royalty rates can't be passed in from chat, and no break-even figure. If the author wants a true break-even, ask for their royalty per sale and list price, then break-even ACOS is royalty divided by price. Show the arithmetic.
-6. **Click tests:** which test is next in `testPlan`, whether every idea in the current run has passed the floor of about 400 impressions, and the suggested winners.
+4. **Kill and scale** (to the author: "when to stop an ad and when to raise its budget"): apply the plan's own rules to each campaign, alongside the `aa_optimize_ads` verdict. When they disagree, show both and say which one you'd follow and why, in one line.
+5. **Amazon break-even:** compare ACOS with the plan's ACOS target. Plans built from chat usually carry the house fallback target, because royalty rates can't be passed in from chat, and no break-even figure. To the author, call it "Reader Radius's standard starting target". If the author wants a true break-even, ask for their royalty per sale and list price, then break-even ACOS is royalty divided by price. Show the arithmetic.
+6. **Click tests:** which test is next in `testPlan`, whether every idea in the current run has been shown about 400 times (the floor counts impressions; say "shown about 400 times" to the author), and the suggested winners.
 7. **Creative fatigue:** campaigns flagged as fatigued. If fresh angles would help, `aa_ads_strategy_review_audit({ bookId, asin })` pulls new pain points and ad-ready phrases from the book's real reviews. It reads reviews, not campaign results, so present it as a source for new creative only.
 8. **Gaps and compliance:** anything the plan left as a gap, and any compliance constraint the running ads might be missing (Meta's Special Ad Category for health or finance books, for example).
 
@@ -52,8 +52,8 @@ Keep each line tied to a named campaign and a number.
 
 Turn the report into a numbered list of proposals, each with the reason and what it costs or saves:
 
-> 1. Pause "Curses SP auto" on Amazon: 91% ACOS over 30 days against the plan's target. Saves about $8 a day.
-> 2. Judge Test 1 (hook): all 12 ideas are past about 400 impressions; the suggested winners are ideas 3 and 7.
+> 1. Pause "Curses SP auto" on Amazon: 91% ACOS (ad spend as a share of sales) over 30 days against the plan's 35% target. Saves about $8 a day.
+> 2. Pick the winners of Test 1 (hooks): all 12 ideas have been shown about 400 times; the suggested winners are ideas 3 and 7.
 > 3. Hold the Meta campaign at $10 a day: it's in the plan's "too early" window.
 
 Then confirm each one separately and use the matching tool:
@@ -62,7 +62,7 @@ Then confirm each one separately and use the matching tool:
 |---|---|---|
 | Pause or resume a campaign on any network other than Amazon | `aa_update_ad_campaign_status` (`id` is the campaign id and `accountId` the connected account, as `aa_list_all_ads` shows them; `status: "paused"` or `"active"`). `platform` takes the provider name, which differs from the network name for two networks: Meta is `facebook` and X is `twitter`. The others are `tiktok`, `linkedin`, `pinterest`, `google` and `openai` (ChatGPT). | Resuming spends money again; confirm first. |
 | Pause or start an Amazon campaign | `aa_amazon_ads_campaign_state` (`campaignId`, `amazonProfileId`, `state: "PAUSED"` or `"ENABLED"`, `adProduct` when it isn't Sponsored Products) | `ENABLED` starts spending the daily budget right away. Never use `ARCHIVED` to stop spending: it's permanent. Archive only when the author asks for it after you've said it can't be undone. |
-| Judge a click test | `aa_ads_test_run_judge` | Call it without `confirm` first to read the results and show them. Record winners with `confirm: true` and the `winners` the author picked. If some ideas are under the floor (about 400 impressions each) it's refused; pass `override: true` only when the author chooses to judge early, and tell them that's recorded on the run. The response carries `nextTest` with the wizard link for the next test. |
+| Judge a click test | `aa_ads_test_run_judge` | Call it without `confirm` first to read the results and show them. Record winners with `confirm: true` and the `winners` the author picked. If some ideas haven't been shown about 400 times yet it's refused; pass `override: true` only when the author chooses to judge early, and tell them that's recorded on the run. The response carries `nextTest` with the wizard link for the next test. |
 | Budget changes, new campaigns or new test ads | The dashboard's Create ad wizard (`/dashboard/ads/create?plan=<planId>`), or the `create-meta-ad` skill and the Amazon create tools from chat | Show what will be created first, and say "I'll confirm with you before anything goes live." |
 | Map a campaign to the book | `aa_set_ad_title_map` | After the author confirms which book it is. |
 

@@ -105,7 +105,7 @@ Settings → Plugins → three-dot menu next to the marketplace → toggle **Syn
 ### v3.16.0 (2026-10-25): ads strategy from chat
 
 - **New `ads-strategy-interview` skill.** Claude interviews the author one question at a time about the book, genre, comps, ideal reader, goal, budget and length, ad networks, existing assets and past results. It skips anything the account already answers (pen names, books, connected ad accounts, past campaign spend), then saves the brief as a draft plan (`aa_ads_strategy_plan_create`), generates the plan (`aa_ads_strategy_plan_generate`), shows it, and adopts it (`aa_ads_strategy_plan_adopt`) only on the author's yes. On the MCP plan, where Reader Radius doesn't write the creative, Claude writes the personas and hooks itself and says they live in the chat. Building ads afterward always starts with showing the campaigns, and Claude confirms before anything goes live.
-- **New `ads-plan-review` skill.** Compares running campaigns with the adopted plan's budget, platform, kill and scale rules and click tests, using `aa_optimize_ads`, Amazon spend and royalties (`aa_amazon_ads_campaigns`, `aa_amazon_ads_pnl`), campaign groups and test runs. It proposes pauses, test judgments and next steps, and applies each one only after the author approves it.
+- **New `ads-plan-review` skill.** Compares running campaigns with the adopted plan's budget, platform, rules for when to stop an ad and when to raise its budget, and click tests, using `aa_optimize_ads`, Amazon spend and royalties (`aa_amazon_ads_campaigns`, `aa_amazon_ads_pnl`), campaign groups and test runs. It proposes pauses, test judgments and next steps, and applies each one only after the author approves it.
 
 ### v3.14.1 (2026-10-17): analytics on every plan
 

@@ -41,19 +41,20 @@ Ask only what Step 0 didn't answer. The order matters: the first six answers bec
 
 | # | Question (one per message) | Skip it when | Where the answer goes |
 |---|---|---|---|
-| 1 | "Which book is this plan for? Or is it a plan for the whole pen name?" | Only one book, or the author already named it | `bookId` on `aa_ads_strategy_plan_create`; `bookTitle`, `asin` on `aa_ads_strategy_plan_generate` |
+| 1 | "Which book is this plan for, or is it for the whole pen name?" | Only one book, or the author already named it | `bookId` on `aa_ads_strategy_plan_create`; `bookTitle`, `asin` on `aa_ads_strategy_plan_generate` |
 | 2 | "Is it fiction or non-fiction?" | The book's description makes it unmistakable (still confirm in the brief) | `situation.workType` |
 | 3 | "What genre is it?" (fiction) or "What kind of book is it?" (non-fiction). Offer the list below. | Never: the account doesn't store genre | `situation.genre` |
 | 3b | Non-fiction only: "What's this book's main job: sell copies, grow your email list, build your reputation as an expert, or lead readers to a course or service?" | Fiction | `situation.nonFictionPurpose` |
 | 4 | "Where does it sit in your catalog: first in a series, a later book in a series, a standalone, or a box set?" | Never | `situation.catalogDepth` |
-| 5 | "Where is it sold: Amazon only in Kindle Unlimited, Amazon plus other stores, or your own store?" | Never | `situation.distribution` |
-| 6 | "How much are you comfortable spending to start, per day? And for how long?" | Never | Daily amount sets `situation.budgetPosture`; the length carries to the build (start and end dates) |
+| 5 | "Only on Amazon and in Kindle Unlimited, on Amazon plus other stores, or from your own store?" | Never | `situation.distribution` |
+| 6 | "How much are you comfortable spending per day to start?" | Never | `situation.budgetPosture` |
+| 6b | "For how long: a week, two weeks, a month?" (its own message, after question 6) | Never | Carries to the build (start and end dates) |
 | 7 | "What's the goal right now: a launch, steady sales of a backlist title, read-through to the rest of the series, or growing your list?" | The author already said it | Launch vs. steady sales and list growth carry to the build (the wizard's Launch, Sell and Newsletter goals). Read-through is mostly answered by question 4. For non-fiction, list growth is question 3b. |
 | 8 | "Which two or three authors or books would your readers also love?" | Never | Comps for research: `aa_ads_strategy_ad_library_scan` `query`, `aa_ads_strategy_keyword_ideas` `seedKeywords`, Amazon keyword ideas, interest targeting later |
 | 9 | "Describe your ideal reader in a sentence or two. What do they come to your books for?" | Never | The reader persona: checked against the plan's personas, or used to write them (see Step 3) |
 | 10 | "Where do you want to run ads? You're connected to: ..." (list what `aa_ads_capabilities` shows) | Only one destination is connected and the author is happy with it | Compared with the plan's platform choice; carries to the build |
 | 11 | "What do you already have to work with: a cover you like, a trailer or video, a reader magnet, a landing page, reader reviews?" | Answered by the data (`asin` present, reference docs saved) | Creative and destination planning; reviews feed `aa_ads_strategy_review_audit`. Check `aa_list_book_reference_docs` with the `bookId` for saved quotes and scenes. |
-| 12 | "Have you run ads for this book before? What happened?" | Step 0 found past campaigns: summarize them instead ("Your Amazon ads spent $210 over the last 90 days at 68% ACOS") and ask only what the numbers can't say, such as what the author thinks went wrong | Context for the plan review and for which network to start on |
+| 12 | "Have you run ads for this book before? What happened?" | Step 0 found past campaigns: summarize them instead ("Your Amazon ads spent $210 over the last 90 days at 68% ACOS (ad spend as a share of sales)") and ask only what the numbers can't say, such as what the author thinks went wrong | Context for the plan review and for which network to start on |
 
 ### Mapping answers to the brief (exact values only)
 
@@ -124,7 +125,7 @@ Three outcomes to handle:
 2. **The call is refused with "On your plan, your own AI does the writing and the images..."**: the author's plan doesn't include Reader Radius's own writing. Nothing was saved. Call again with `includeCreative: false`, which saves the playbook decisions without creative. Then write the personas, messaging angles (pain, persona, angle) and a handful of hooks yourself, grounded on the review audit, the reader description and the comps. Say clearly that these hooks live in this chat and are not saved in the plan, so the Create ad wizard won't pre-fill them.
 3. **The version comes back with `creativeWarning`**: the playbook saved, the creative didn't. Tell the author, and offer to generate again (a new version) or to draft the creative yourself.
 
-Royalty and page-read rates can't be passed through this tool, so the plan's `economics` area falls back to a house default ACOS target (marked `computedFrom: "fallback"`, with no break-even figure). Say so when you show it. If the author wants a real break-even, the `ads-plan-review` skill does that math from their royalty and price.
+Royalty and page-read rates can't be passed through this tool, so the plan's `economics` area falls back to a house default ACOS target (marked `computedFrom: "fallback"`, with no break-even figure). When you show it, call it "Reader Radius's standard starting target", not a fallback or house default. If the author wants a real break-even, the `ads-plan-review` skill does that math from their royalty and price.
 
 ## Step 4: Show the plan
 
@@ -134,9 +135,9 @@ Read it back with `aa_ads_strategy_plan_get({ planId })` if you need the full ve
 - **Budget and structure:** the starting daily budget, campaign structure and bidding.
 - **Targeting:** the playbook's targeting decision, plus the comps you'd add.
 - **Creative:** personas, messaging angles, the strongest hooks, and the visual look if there is one.
-- **The click-test plan** (`testPlan`): six tests run one at a time (hook, headline, proof, image, primary text, stress), 12 ideas each, about $30 a day for 24 to 36 hours until each idea has about 400 impressions (the plan words this as "seen by about 400 people"), winners carried forward. Meta is the only platform it runs on.
-- **Targets:** the ACOS target from the economics area (say if it's the house fallback), the click and impression thresholds in KPI targets, the kill and scale rules, and the cadence.
-- **Gaps:** list any area in `gaps` honestly ("the playbook has no house default for box sets yet").
+- **The click-test plan** (`testPlan`): six tests run one at a time (hook, headline, proof, image, primary text, stress), 12 ideas each, about $30 a day for 24 to 36 hours until each idea has been shown about 400 times, winners carried forward. (The floor counts impressions. Say "shown about 400 times" to the author, never "seen by 400 people".) Meta is the only platform it runs on.
+- **Targets:** the ACOS target from the economics area (if `computedFrom` is `"fallback"`, call it "Reader Radius's standard starting target"), the click and impression thresholds in KPI targets, the kill and scale rules (to the author: "when to stop an ad and when to raise its budget"), and the cadence.
+- **Gaps:** list any area in `gaps` honestly ("the playbook doesn't have a standard setup for box sets yet").
 - **Compliance notes:** any `complianceConstraints`, such as Meta's Special Ad Category for health or finance books.
 
 Keep the playbook's numbers exactly as the plan states them. Don't round, merge or "improve" them.
